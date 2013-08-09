@@ -1,6 +1,5 @@
 import time
 import socket
-import argparse
 try:
     from camera.mode_options import (
         TAKE_PICTURE_AT,

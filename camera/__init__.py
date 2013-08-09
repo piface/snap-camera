@@ -68,7 +68,7 @@ def start_camera():
     switchlistener.register(1, pifacecad.IODIR_ON, option1)
     switchlistener.register(2, pifacecad.IODIR_ON, option2)
     switchlistener.register(3, pifacecad.IODIR_ON, option3)
-    switchlistener.register(4, pifacecad.IODIR_ON, exit)
+    # switchlistener.register(4, pifacecad.IODIR_ON, exit)
     switchlistener.register(5, pifacecad.IODIR_ON, take_picture)
     switchlistener.register(6, pifacecad.IODIR_ON, previous_option)
     switchlistener.register(7, pifacecad.IODIR_ON, next_option)

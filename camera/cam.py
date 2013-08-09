@@ -12,7 +12,8 @@ from camera.mode_options import (
 )
 
 
-IMAGE_DIR = "images/"
+IMAGE_DIR = "{}/../{}".format(
+    os.path.dirname(os.path.realpath(__file__)), "images/")
 AVERAGE_IMAGE_SIZE = 2.4 * 1024 * 1024  # 2.4 is from `ls -l`
 
 
@@ -27,7 +28,7 @@ class Camera(object):
             {'name': 'timelapse', 'option': TimelapseModeOption(self)},
             {'name': 'IR', 'option': IRModeOption(self)},
             {'name': 'network', 'option': NetworkTriggerModeOption(self)},
-            {'name': 'viewer', 'option': ViewerModeOption(self)},
+            # {'name': 'viewer', 'option': ViewerModeOption(self)},
         )
         self.cad = cad
 
@@ -47,9 +48,7 @@ class Camera(object):
 
     @property
     def pictures_remaining(self):
-        image_dir_full_path = "{}/../{}".format(
-            os.path.dirname(os.path.realpath(__file__)), IMAGE_DIR)
-        return int(freespace(image_dir_full_path) / AVERAGE_IMAGE_SIZE)
+        return int(freespace(IMAGE_DIR) / AVERAGE_IMAGE_SIZE)
 
     @property
     def current_mode(self):
@@ -93,13 +92,13 @@ class Camera(object):
     def take_picture(self):
         """Captures a picture with the camera."""
         command = self.build_camera_command()
-        print(command)
+        # print(command)
 
         # show that we're taking
         self.cad.lcd.set_cursor(7, 0)
         self.cad.lcd.write("#")
 
-        print("KCH-CHSSHHH!")
+        # print("KCH-CHSSHHH!")
         status = subprocess.call([command], shell=True)
 
         # show that we've finished
