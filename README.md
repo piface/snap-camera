@@ -14,3 +14,12 @@ Enable the service:
     sudo update-rc.d camera enable
 
 The camera should start up on boot.
+
+
+Enabling HDMI on boot even when unplugged (required for viewer)
+---------------------------------------------------------------
+Uncomment:
+
+    hdmi_force_hotplug=1
+
+in /boot/config.txt

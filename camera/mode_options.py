@@ -1,7 +1,9 @@
+import os
 import time
 import struct
 import socket
 import threading
+import multiprocessing
 import subprocess
 import socketserver
 import pifacecad
@@ -34,9 +36,13 @@ CAMERA_EFFECTS = (
     'cartoon',
 )
 
+IMAGE_DIR = "{}/../{}".format(
+    os.path.dirname(os.path.realpath(__file__)), "images/")
+
 MCAST_GRP = '224.1.1.1'
 MCAST_PORT = 5007
 TAKE_PICTURE_AT = "take picture at "
+SEND_LAST_IMAGE_TO = "send last image to "
 
 
 class ModeOption(object):
@@ -155,7 +161,74 @@ class EffectsModeOption(ModeOption):
 
 
 class ViewerModeOption(ModeOption):
-    pass
+    def __init__(self, *args):
+        super().__init__(*args)
+        # current image index is the number in the image name
+        try:
+            # get the first image index
+            self.current_image_index = \
+                image_index(sorted(os.listdir(IMAGE_DIR))[0])
+        except IndexError:
+            self.current_image_index = 0
+
+    def update_display_option_text(self):
+        super().update_display_option_text(str(self.current_image_index))
+
+    def enter(self):
+        self.kill_image_viewer()
+        self.start_image_viewer()
+
+    def exit(self):
+        self.kill_image_viewer()
+
+    def next(self):
+        self.kill_image_viewer()
+        self.increment_image_index()
+        self.update_display_option_text()
+        self.start_image_viewer()
+
+    def previous(self):
+        self.kill_image_viewer()
+        self.decrement_image_index()
+        self.update_display_option_text()
+        self.start_image_viewer()
+
+    def kill_image_viewer(self):
+        subprocess.call(['sudo killall fbi'], shell=True)
+
+    def start_image_viewer(self):
+        subprocess.call([
+            'sudo fbi -T 1 {image_dir}image{image_index:04}.jpg'.format(
+                image_dir=IMAGE_DIR,
+                image_index=self.current_image_index)], shell=True)
+
+    def increment_image_index(self):
+        images = sorted(os.listdir(IMAGE_DIR))
+        if len(images) == 0:
+            return
+        elif self.current_image_index == 0:
+            self.current_image_index = 1
+        else:
+            current_image_name = \
+                "image{:04}.jpg".format(self.current_image_index)
+            next_image_array_index = \
+                (images.index(current_image_name) + 1) % len(images)
+            self.current_image_index = \
+                image_index(images[next_image_array_index])
+
+    def decrement_image_index(self):
+        images = sorted(os.listdir(IMAGE_DIR))
+        if len(images) == 0:
+            return
+        elif self.current_image_index == 0:
+            self.current_image_index = 1
+        else:
+            current_image_name = \
+                "image{:04}.jpg".format(self.current_image_index)
+            next_image_array_index = \
+                (images.index(current_image_name) - 1) % len(images)
+            self.current_image_index = \
+                image_index(images[next_image_array_index])
 
 
 class TimelapseModeOption(ModeOption):
@@ -212,16 +285,17 @@ class TimelapseModeOption(ModeOption):
 
 class IRModeOption(ModeOption):
     def enter(self):
-        self.ir_listener = pifacecad.IREventListener('camera')
-        self.ir_listener.register('0', self.take_picture)
         try:
+            self.ir_listener = pifacecad.IREventListener('camera')
+            self.ir_listener.register('0', self.take_picture)
             self.ir_listener.activate()
             self.ir_listener_is_active = True
             self.error = False
-        except:
+        except Exception as e:
             super().update_display_option_text("error")
             self.ir_listener_is_active = False
             self.error = True
+            print("ERROR (IR Mode):", e)
 
     def update_display_option_text(self):
         message = "error" if self.error else ""
@@ -233,6 +307,9 @@ class IRModeOption(ModeOption):
 
     def take_picture(self, event):
         self.camera.take_picture()
+        # print("IR: taking picture.")
+        # multiprocessing.Process(target=self.camera.take_picture).start()
+        # print("IR: not my problem")
 
 
 class ThreadedMulticastServer(
@@ -258,18 +335,10 @@ class NetworkTriggerModeOption(ModeOption):
     def __init__(self, *args):
         super().__init__(*args)
         self.server = None
-        self.show_port = True
+        self.number = 0
 
     def update_display_option_text(self):
-        # option_text = ""
-        # if self.server:
-        #     server_ip, port = self.server.server_address
-        #     # get the last two ip segments
-        #     ip = ".".join(get_my_ip().split(".")[-2:])
-        #     option_text = str(port) if self.show_port else str(ip)
-
-        option_text = "mcast"
-        super().update_display_option_text(option_text)
+        super().update_display_option_text("#{}".format(self.number))
 
     def enter(self):
         # a bit of an ugly solution to pass handlers variables
@@ -296,11 +365,11 @@ class NetworkTriggerModeOption(ModeOption):
         print("Stopped server.")
 
     def next(self):
-        self.show_port = not self.show_port
+        self.number += 1
         self.update_display_option_text()
 
     def previous(self):
-        self.show_port = not self.show_port
+        self.number -= 1
         self.update_display_option_text()
 
 
@@ -324,10 +393,33 @@ class NetworkCommandHandler(socketserver.BaseRequestHandler):
 
         if TAKE_PICTURE_AT in data:
             picture_time = float(data[len(TAKE_PICTURE_AT):])
-            # wait until it's picture_time
-            while time.time() < picture_time:
-                pass
-            self.camera.take_picture()
+            self.take_picture_at(picture_time)
+        elif SEND_LAST_IMAGE_TO in data:
+            ip, port = data[len(SEND_LAST_IMAGE_TO):].split(":")
+            last_image = sorted(os.listdir(IMAGE_DIR))[-1]
+            self.send_image_to(ip, int(port), last_image)
+
+    def take_picture_at(self, picture_time):
+        # wait until it's picture_time
+        while time.time() < picture_time:
+            pass
+        self.camera.take_picture()
+
+    def send_image_to(self, ip, port, image_name):
+        print("sending image to {}:{}".format(ip, port))
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect((ip, port))
+        camera_number = self.camera.current_mode['option'].number
+        image_number = self.camera.last_image_number
+        try:
+            sock.send(bytes(str(camera_number).ljust(16), 'utf-8'))
+            sock.send(bytes(str(image_number).ljust(16), 'utf-8'))
+            with open(IMAGE_DIR + image_name, 'rb') as image:
+                sock.sendall(image.read())
+            # response = sock.recv(1024)
+            # print "Received: {}".format(response)
+        finally:
+            sock.close()
 
 
 def get_my_ip():
@@ -336,3 +428,9 @@ def get_my_ip():
 
 def run_cmd(cmd):
     return subprocess.check_output(cmd, shell=True).decode('utf-8')
+
+
+def image_index(image_string):
+    """Returns the index of the image given. For example: image0010.jpg -> 10
+    """
+    return int(image_string.replace("image", "").replace(".jpg", ""))

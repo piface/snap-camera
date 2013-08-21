@@ -2,6 +2,7 @@ import os
 import subprocess
 from pifacecad.lcd import LCD_WIDTH
 from camera.mode_options import (
+    IMAGE_DIR,
     CAMERA_EFFECTS,
     CameraModeOption,
     EffectsModeOption,
@@ -12,8 +13,6 @@ from camera.mode_options import (
 )
 
 
-IMAGE_DIR = "{}/../{}".format(
-    os.path.dirname(os.path.realpath(__file__)), "images/")
 AVERAGE_IMAGE_SIZE = 2.4 * 1024 * 1024  # 2.4 is from `ls -l`
 
 
@@ -28,7 +27,7 @@ class Camera(object):
             {'name': 'timelapse', 'option': TimelapseModeOption(self)},
             {'name': 'IR', 'option': IRModeOption(self)},
             {'name': 'network', 'option': NetworkTriggerModeOption(self)},
-            # {'name': 'viewer', 'option': ViewerModeOption(self)},
+            {'name': 'viewer', 'option': ViewerModeOption(self)},
         )
         self.cad = cad
 
@@ -55,18 +54,22 @@ class Camera(object):
         return self.modes[self.current_mode_index]
 
     @property
-    def next_image_number(self):
+    def last_image_number(self):
         try:
             last_image = sorted(os.listdir(IMAGE_DIR))[-1]
         except IndexError:
-            last_image_number = 0
+            image_number = 0
         else:
             last_image = last_image.strip(".jpgpng")
             if '_' in last_image:
                 last_image = last_image[:-5]  # get rid of the _0000
-            last_image_number = int(last_image[-4:])
+            image_number = int(last_image[-4:])
         finally:
-            return last_image_number + 1
+            return image_number
+
+    @property
+    def next_image_number(self):
+        return self.last_image_number + 1
 
     def build_camera_command(self):
         command = 'raspistill'
