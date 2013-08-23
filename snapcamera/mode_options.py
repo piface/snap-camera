@@ -176,7 +176,7 @@ class EffectsModeOption(ModeOption):
 class OverlayModeOption(ModeOption):
     def __init__(self, *args):
         super().__init__(*args)
-        self.current_overlay_index = 0
+        self.current_overlay_index = 0 if len(self.overlays) > 0 else None
 
     @property
     def overlays(self):
@@ -184,7 +184,10 @@ class OverlayModeOption(ModeOption):
 
     @property
     def current_overlay(self):
-        return self.overlays[self.current_overlay_index]
+        if self.current_overlay_index:
+            return self.overlays[self.current_overlay_index]
+        else:
+            return None
 
     @current_overlay.setter
     def current_overlay(self, effect_name):
@@ -192,21 +195,28 @@ class OverlayModeOption(ModeOption):
 
     def update_display_option_text(self):
         super().update_display_option_text(
-            self.current_overlay.replace(".png", ""))
+            str(self.current_overlay).replace(".png", ""))
 
     def next(self):
+        if not self.current_overlay:
+            return
         self.current_overlay_index = \
             (self.current_overlay_index + 1) % len(self.overlays)
         self.update_camera()
         self.update_display_option_text()
 
     def previous(self):
+        if not self.current_overlay:
+            return
         self.current_overlay_index = \
             (self.current_overlay_index - 1) % len(self.overlays)
         self.update_camera()
         self.update_display_option_text()
 
     def post_picture(self):
+        if not self.current_overlay:
+            return
+
         # show that we're taking
         self.camera.print_status_char("#")
         super().update_display_option_text("working")
