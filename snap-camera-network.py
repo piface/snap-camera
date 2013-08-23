@@ -5,7 +5,7 @@ import threading
 import subprocess
 import socketserver
 try:
-    from camera.mode_options import (
+    from snapcamera.mode_options import (
         TAKE_PICTURE_AT,
         SEND_LAST_IMAGE_TO,
         MCAST_GRP,

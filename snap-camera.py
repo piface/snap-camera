@@ -1,4 +1,5 @@
-import camera
+#!/usr/bin/python3
+import snapcamera
 import argparse
 import pifacecad
 
@@ -14,4 +15,4 @@ if __name__ == '__main__':
         pifacecad.PiFaceCAD().lcd.backlight_off()
         pifacecad.deinit()
     else:
-        camera.start_camera()
+        snapcamera.start_camera()

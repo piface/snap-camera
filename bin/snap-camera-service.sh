@@ -8,24 +8,24 @@
 # Description:       Camera (PiFaceCAD + Raspicam) service.
 ### END INIT INFO
 
-LOCKFILE="/var/lock/camera_service.lock"
+LOCKFILE="/var/lock/snap_camera_service.lock"
 
 start() {
-        echo -n "Starting camera service: "
-        /usr/bin/python3 /home/pi/camera/camera.py &
+        echo -n "Starting snap-camera service: "
+        /usr/bin/python3 /usr/bin/snap-camera &
         ### Create the lock file ###
         echo $! > $LOCKFILE
         status
 }
 
 stop() {
-        echo -n "Stopping camera service: "
+        echo -n "Stopping snap-camera service: "
         pid=$(cat $LOCKFILE)
         kill $pid
         # Now, delete the lock file ###
         rm -f $LOCKFILE
         # clean up the screen
-        /usr/bin/python3 /home/pi/camera/camera.py --clear
+        /usr/bin/python3 /usr/bin/snap-camera --clear
         status
 }
 

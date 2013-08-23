@@ -2,24 +2,33 @@ Camera
 ======
 A camera that uses PiFace Control and Display and Raspicam.
 
-Put this directory at `/home/pi/camera/`. Images are stored at
-`/home/pi/camera/images/`.
-
-Copy camera-service.sh to the daemons directory.
-
-    cp camera-service.sh /etc/init.d/camera
-
-Enable the service:
-
-    sudo update-rc.d camera enable
-
-The camera should start up on boot.
+Images are stored at `/home/pi/snap-camera/images/`.
+Overlays are stored at `/home/pi/snap-camera/overlays/`.
 
 
-Enabling HDMI on boot even when unplugged (required for viewer)
----------------------------------------------------------------
-Uncomment:
+Install
+=======
+Enable the camera with:
+
+    raspi-config
+
+Enable HDMI to start even when unplugged by uncommenting:
 
     hdmi_force_hotplug=1
 
-in /boot/config.txt
+in `/boot/config.txt`.
+
+Download the latest debian package and install with:
+
+    sudo dpkg -i python3-snap-camera_0.0.0-1_all.deb
+
+Start/stop the camera service with:
+
+    sudo service snap-camera start
+    sudo service snap-camera stop
+
+Enable the service at boot:
+
+    sudo update-rc.d snap-camera enable
+
+The camera should start up on boot.

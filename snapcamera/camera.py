@@ -1,11 +1,13 @@
 import os
 import subprocess
 from pifacecad.lcd import LCD_WIDTH
-from camera.mode_options import (
+from snapcamera.mode_options import (
     IMAGE_DIR,
+    OVERLAY_DIR,
     CAMERA_EFFECTS,
     CameraModeOption,
     EffectsModeOption,
+    OverlayModeOption,
     TimelapseModeOption,
     IRModeOption,
     NetworkTriggerModeOption,
@@ -20,10 +22,16 @@ class Camera(object):
     """A camera for the Raspberry Pi which uses PiFace CAD and the RapspiCam.
     """
     def __init__(self, cad):
+        # make the image and overlay dirs
+        for directory in (IMAGE_DIR, OVERLAY_DIR):
+            if not os.path.exists(directory):
+                os.makedirs(directory, exist_ok=True)
+
         self.current_mode_index = 0
         self.modes = (
             {'name': 'camera', 'option': CameraModeOption(self)},
             {'name': 'effects', 'option': EffectsModeOption(self)},
+            {'name': 'overlay', 'option': OverlayModeOption(self)},
             {'name': 'timelapse', 'option': TimelapseModeOption(self)},
             {'name': 'IR', 'option': IRModeOption(self)},
             {'name': 'network', 'option': NetworkTriggerModeOption(self)},
@@ -36,10 +44,6 @@ class Camera(object):
         self.timeout = 0
         self.timelapse_interval = None
         self.effect = CAMERA_EFFECTS[0]
-
-        # make the images dir
-        if not os.path.exists(IMAGE_DIR):
-            os.makedirs(IMAGE_DIR)
 
     @property
     def pictures_taken(self):
@@ -97,19 +101,21 @@ class Camera(object):
         command = self.build_camera_command()
         # print(command)
 
-        # show that we're taking
-        self.cad.lcd.set_cursor(7, 0)
-        self.cad.lcd.write("#")
+        self.print_status_char('#')
 
         # print("KCH-CHSSHHH!")
         status = subprocess.call([command], shell=True)
 
         # show that we've finished
-        self.cad.lcd.set_cursor(7, 0)
-        self.cad.lcd.write(" " if status == 0 else "E")
+        self.print_status_char(" " if status == 0 else "E")
 
         self.update_display_taken()
         self.update_display_remaining()
+
+    def print_status_char(self, character):
+        # show that we're taking
+        self.cad.lcd.set_cursor(7, 0)
+        self.cad.lcd.write(character)
 
     def update_display(self):
         self.update_display_taken()

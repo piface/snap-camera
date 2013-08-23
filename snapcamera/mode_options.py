@@ -1,4 +1,5 @@
 import os
+import re
 import time
 import struct
 import socket
@@ -36,8 +37,12 @@ CAMERA_EFFECTS = (
     'cartoon',
 )
 
-IMAGE_DIR = "{}/../{}".format(
-    os.path.dirname(os.path.realpath(__file__)), "images/")
+# IMAGE_DIR = "{}/../{}".format(
+#     os.path.dirname(os.path.realpath(__file__)), "images/")
+# OVERLAY_DIR = "{}/../{}".format(
+#     os.path.dirname(os.path.realpath(__file__)), "overlay/")
+IMAGE_DIR = "/home/pi/snap-camera/images/"
+OVERLAY_DIR = "/home/pi/snap-camera/overlays/"
 
 MCAST_GRP = '224.1.1.1'
 MCAST_PORT = 5007
@@ -51,6 +56,14 @@ class ModeOption(object):
     """
     def __init__(self, camera):
         self.camera = camera
+
+    def pre_picture(self):
+        """This function is called before the picture is taken."""
+        pass
+
+    def post_picture(self):
+        """This function is called after the picture is taken."""
+        pass
 
     def update_display_option_text(self, option_text=""):
         """This is what prints the option text."""
@@ -160,19 +173,84 @@ class EffectsModeOption(ModeOption):
         self.update_display_option_text()
 
 
+class OverlayModeOption(ModeOption):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.current_overlay_index = 0
+
+    @property
+    def overlays(self):
+        return sorted(os.listdir(OVERLAY_DIR))
+
+    @property
+    def current_overlay(self):
+        return self.overlays[self.current_overlay_index]
+
+    @current_overlay.setter
+    def current_overlay(self, effect_name):
+        self.current_overlay_index = self.overlays.index(effect_name)
+
+    def update_display_option_text(self):
+        super().update_display_option_text(
+            self.current_overlay.replace(".png", ""))
+
+    def next(self):
+        self.current_overlay_index = \
+            (self.current_overlay_index + 1) % len(self.overlays)
+        self.update_camera()
+        self.update_display_option_text()
+
+    def previous(self):
+        self.current_overlay_index = \
+            (self.current_overlay_index - 1) % len(self.overlays)
+        self.update_camera()
+        self.update_display_option_text()
+
+    def post_picture(self):
+        # show that we're taking
+        self.camera.print_status_char("#")
+        super().update_display_option_text("working")
+
+        original_image = "image{:04}.jpg".format(self.camera.last_image_number)
+
+        new_image = "image{:04}-{}.jpg".format(
+            self.camera.last_image_number,
+            self.current_overlay.replace(".png", ""))
+
+        command = "composite -geometry +500+500 -quality 100 "\
+            "{overlay} {original_image} {new_image}".format(
+                overlay=OVERLAY_DIR+self.current_overlay,
+                original_image=IMAGE_DIR+original_image,
+                new_image=IMAGE_DIR+new_image)
+        status = subprocess.call([command], shell=True)
+
+        # show that we've finished
+        self.camera.print_status_char(" " if status == 0 else "E")
+        self.update_display_option_text()
+
+        # we have an extra image, update taken/remaining
+        self.camera.update_display_taken()
+        self.camera.update_display_remaining()
+
+
 class ViewerModeOption(ModeOption):
     def __init__(self, *args):
         super().__init__(*args)
         # current image index is the number in the image name
         try:
             # get the first image index
-            self.current_image_index = \
-                image_index(sorted(os.listdir(IMAGE_DIR))[0])
+            self.current_image_index = image_index(self.images[0])
         except IndexError:
             self.current_image_index = 0
 
+    @property
+    def images(self):
+        return sorted(os.listdir(IMAGE_DIR))
+
     def update_display_option_text(self):
-        super().update_display_option_text(str(self.current_image_index))
+        image_number = image_index(
+            self.images[self.current_image_index])
+        super().update_display_option_text(str(image_number))
 
     def enter(self):
         self.kill_image_viewer()
@@ -197,38 +275,28 @@ class ViewerModeOption(ModeOption):
         subprocess.call(['sudo killall fbi'], shell=True)
 
     def start_image_viewer(self):
-        subprocess.call([
-            'sudo fbi -T 1 {image_dir}image{image_index:04}.jpg'.format(
-                image_dir=IMAGE_DIR,
-                image_index=self.current_image_index)], shell=True)
+        image_file = self.images[self.current_image_index]
+        command = 'sudo fbi -autodown -T 1 {image}'.format(
+            image=IMAGE_DIR + image_file)
+        subprocess.call([command], shell=True)
 
     def increment_image_index(self):
-        images = sorted(os.listdir(IMAGE_DIR))
-        if len(images) == 0:
+        if len(self.images) == 0:
             return
-        elif self.current_image_index == 0:
-            self.current_image_index = 1
+        # elif self.current_image_index == 0:
+        #     self.current_image_index = 1
         else:
-            current_image_name = \
-                "image{:04}.jpg".format(self.current_image_index)
-            next_image_array_index = \
-                (images.index(current_image_name) + 1) % len(images)
             self.current_image_index = \
-                image_index(images[next_image_array_index])
+                (self.current_image_index + 1) % len(self.images)
 
     def decrement_image_index(self):
-        images = sorted(os.listdir(IMAGE_DIR))
-        if len(images) == 0:
+        if len(self.images) == 0:
             return
-        elif self.current_image_index == 0:
-            self.current_image_index = 1
+        # elif self.current_image_index == 0:
+        #     self.current_image_index = 1
         else:
-            current_image_name = \
-                "image{:04}.jpg".format(self.current_image_index)
-            next_image_array_index = \
-                (images.index(current_image_name) - 1) % len(images)
             self.current_image_index = \
-                image_index(images[next_image_array_index])
+                (self.current_image_index - 1) % len(self.images)
 
 
 class TimelapseModeOption(ModeOption):
@@ -433,4 +501,5 @@ def run_cmd(cmd):
 def image_index(image_string):
     """Returns the index of the image given. For example: image0010.jpg -> 10
     """
-    return int(image_string.replace("image", "").replace(".jpg", ""))
+    #return int(image_string.replace("image", "").replace(".jpg", ""))
+    return int(re.sub(r'image([0-9]{4}).*', r'\1', image_string))

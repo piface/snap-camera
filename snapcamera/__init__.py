@@ -2,7 +2,7 @@ import os
 import threading
 import pifacecad
 from pifacecad.lcd import LCD_WIDTH
-from camera.cam import Camera
+from snapcamera.camera import Camera
 
 
 def previous_mode(event):
@@ -52,7 +52,9 @@ def option3(event):
 
 def take_picture(event):
     global camera
+    camera.current_mode['option'].pre_picture()
     camera.take_picture()
+    camera.current_mode['option'].post_picture()
 
 
 def exit(event):
@@ -68,7 +70,7 @@ def start_camera():
     switchlistener.register(1, pifacecad.IODIR_ON, option1)
     switchlistener.register(2, pifacecad.IODIR_ON, option2)
     switchlistener.register(3, pifacecad.IODIR_ON, option3)
-    switchlistener.register(4, pifacecad.IODIR_ON, exit)
+    # switchlistener.register(4, pifacecad.IODIR_ON, exit)
     switchlistener.register(5, pifacecad.IODIR_ON, take_picture)
     switchlistener.register(6, pifacecad.IODIR_ON, previous_option)
     switchlistener.register(7, pifacecad.IODIR_ON, next_option)
