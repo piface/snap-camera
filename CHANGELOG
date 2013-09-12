@@ -1,6 +1,12 @@
 Change Log
 ==========
 
-v1.0.0
+v0.0.1
 ------
-- Initial release.
+- Fixed network mode bug: camera would crash if no ethernet cable was present.
+- Fixed overlay folder bugs: camera would crash if no overlays directory,
+  camera would not detect overlays.
+
+v0.0.0
+------
+- Initial dev release.
