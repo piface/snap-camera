@@ -184,7 +184,7 @@ class OverlayModeOption(ModeOption):
 
     @property
     def current_overlay(self):
-        if self.current_overlay_index:
+        if self.current_overlay_index is not None:
             return self.overlays[self.current_overlay_index]
         else:
             return None
