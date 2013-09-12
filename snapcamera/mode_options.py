@@ -416,7 +416,10 @@ class NetworkTriggerModeOption(ModeOption):
         self.number = 0
 
     def update_display_option_text(self):
-        super().update_display_option_text("#{}".format(self.number))
+        if self.server:
+            super().update_display_option_text("#{}".format(self.number))
+        else:
+            super().update_display_option_text("error")
 
     def enter(self):
         # a bit of an ugly solution to pass handlers variables
@@ -425,8 +428,12 @@ class NetworkTriggerModeOption(ModeOption):
         class NetworkCommandHandlerWithCamera(NetworkCommandHandler):
             camera = self.camera
 
-        self.server = ThreadedMulticastServer(
-            ('', 0), NetworkCommandHandlerWithCamera)
+        try:
+            self.server = ThreadedMulticastServer(
+                ('', 0), NetworkCommandHandlerWithCamera)
+        except socket.error:
+            self.update_display_option_text()
+            return
 
         # Start a thread with the server -- that thread will then start one
         # more thread for each request
@@ -439,16 +446,19 @@ class NetworkTriggerModeOption(ModeOption):
         self.update_display_option_text()
 
     def exit(self):
-        self.server.shutdown()
-        print("Stopped server.")
+        if self.server:
+            self.server.shutdown()
+            print("Stopped server.")
 
     def next(self):
-        self.number += 1
-        self.update_display_option_text()
+        if self.server:
+            self.number += 1
+            self.update_display_option_text()
 
     def previous(self):
-        self.number -= 1
-        self.update_display_option_text()
+        if self.server:
+            self.number -= 1
+            self.update_display_option_text()
 
 
 class NetworkCommandHandlerError(Exception):
