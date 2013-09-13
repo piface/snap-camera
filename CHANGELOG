@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+v0.0.2
+------
+- Added fbi into dependencies.
+- Fixed viewer bug: camera would crash if there were no images present
+
 v0.0.1
 ------
 - Fixed network mode bug: camera would crash if no ethernet cable was present.
