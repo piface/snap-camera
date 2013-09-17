@@ -62,7 +62,7 @@ def exit(event):
     should_i_exit.wait()
 
 
-def start_camera():
+def start_camera(start_mode=None):
     pifacecad.init()
 
     switchlistener = pifacecad.SwitchEventListener()
@@ -81,10 +81,11 @@ def start_camera():
     cad.lcd.cursor_off()
     cad.lcd.clear()
     cad.lcd.backlight_on()
-    cad.lcd.display_on()
     global camera
-    camera = Camera(cad)
+    camera = Camera(cad, start_mode)
+    camera.current_mode['option'].enter()
     camera.update_display()
+    cad.lcd.display_on()
 
     global should_i_exit
     should_i_exit = threading.Barrier(2)

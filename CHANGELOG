@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+v0.1.0
+------
+- Can specify mode at start up (`snap-camera.py --mode network`).
+- Fixed timimg (no longer used `while now() < pic_time: pass`).
+
 v0.0.2
 ------
 - Added fbi into dependencies.

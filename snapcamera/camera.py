@@ -21,13 +21,23 @@ AVERAGE_IMAGE_SIZE = 2.4 * 1024 * 1024  # 2.4 is from `ls -l`
 class Camera(object):
     """A camera for the Raspberry Pi which uses PiFace CAD and the RapspiCam.
     """
-    def __init__(self, cad):
+    def __init__(self, cad, start_mode='camera'):
         # make the image and overlay dirs
         for directory in (IMAGE_DIR, OVERLAY_DIR):
             if not os.path.exists(directory):
                 os.makedirs(directory, exist_ok=True)
+                os.chmod(directory,
+                         stat.S_IRUSR | stat.S_IWUSR |  # user  R/W
+                         stat.S_IRGRP | stat.S_IXGRP |  # group R/W
+                         stat.S_IROTH | stat.S_IWOTH)   # other R/W
 
-        self.current_mode_index = 0
+        # this is a bit hacky
+        #---------------------------------------------------------------
+        # MAKE SURE YOU UPDATE THIS SECTION WHEN YOU CHANGE THE MODES
+        possible_modes = ('camera', 'effects', 'overlay', 'timelapse',
+                          'ir', 'network', 'viewer')
+        self.current_mode_index = possible_modes.index(start_mode)
+
         self.modes = (
             {'name': 'camera', 'option': CameraModeOption(self)},
             {'name': 'effects', 'option': EffectsModeOption(self)},
@@ -37,6 +47,7 @@ class Camera(object):
             {'name': 'network', 'option': NetworkTriggerModeOption(self)},
             {'name': 'viewer', 'option': ViewerModeOption(self)},
         )
+        #---------------------------------------------------------------
         self.cad = cad
 
         # camera options

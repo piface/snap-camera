@@ -29,6 +29,6 @@ Start/stop the camera service with:
 
 Enable the service at boot:
 
-    sudo update-rc.d snap-camera enable
+    sudo update-rc.d snap-camera defaults
 
 The camera should start up on boot.

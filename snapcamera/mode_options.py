@@ -1,3 +1,4 @@
+# should probably split this file up at some point...
 import os
 import re
 import time
@@ -458,7 +459,8 @@ class NetworkTriggerModeOption(ModeOption):
         try:
             self.server = ThreadedMulticastServer(
                 ('', 0), NetworkCommandHandlerWithCamera)
-        except socket.error:
+        except socket.error as e:
+            print(e)
             self.update_display_option_text()
             return
 
@@ -516,9 +518,14 @@ class NetworkCommandHandler(socketserver.BaseRequestHandler):
 
     def take_picture_at(self, picture_time):
         # wait until it's picture_time
-        while time.time() < picture_time:
+        # while time.time() < picture_time:
+        #     pass
+        try:
+            time.sleep(picture_time - time.time())
+        except IOError:  # negative time
             pass
-        self.camera.take_picture()
+        finally:
+            self.camera.take_picture()
 
     def send_image_to(self, ip, port, image_name):
         print("sending image to {}:{}".format(ip, port))
