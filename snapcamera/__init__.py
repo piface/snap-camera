@@ -62,7 +62,7 @@ def exit(event):
     should_i_exit.wait()
 
 
-def start_camera(start_mode=None):
+def start_camera(start_mode='camera'):
     pifacecad.init()
 
     switchlistener = pifacecad.SwitchEventListener()

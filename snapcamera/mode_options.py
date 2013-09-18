@@ -219,7 +219,7 @@ class OverlayModeOption(ModeOption):
             return
 
         # show that we're taking
-        self.camera.print_status_char("#")
+        self.camera.print_status_busy()
         super().update_display_option_text("working")
 
         original_image = "image{:04}.jpg".format(self.camera.last_image_number)
@@ -236,7 +236,11 @@ class OverlayModeOption(ModeOption):
         status = subprocess.call([command], shell=True)
 
         # show that we've finished
-        self.camera.print_status_char(" " if status == 0 else "E")
+        if status == 0:
+            self.camera.print_status_not_busy()
+        else:
+            self.camera.print_status_error()
+
         self.update_display_option_text()
 
         # we have an extra image, update taken/remaining

@@ -1,5 +1,6 @@
 import os
 import subprocess
+import pifacecad
 from pifacecad.lcd import LCD_WIDTH
 from snapcamera.mode_options import (
     IMAGE_DIR,
@@ -15,7 +16,11 @@ from snapcamera.mode_options import (
 )
 
 
-AVERAGE_IMAGE_SIZE = 2.4 * 1024 * 1024  # 2.4 is from `ls -l`
+AVERAGE_IMAGE_SIZE = 2.4 * 1024 * 1024  # 2.4M is from `ls -l`
+EGG_TIMER_BITMAP = pifacecad.LCDBitmap(
+    #[0x1f, 0x11, 0xa, 0x4, 0x4, 0xa, 0x11, 0x1f])
+    [0x1f, 0x11, 0xa, 0x4, 0xa, 0x11, 0x1f, 0x0])
+EGG_TIMER_BITMAP_INDEX = 0
 
 
 class Camera(object):
@@ -55,6 +60,9 @@ class Camera(object):
         self.timeout = 0
         self.timelapse_interval = None
         self.effect = CAMERA_EFFECTS[0]
+
+        self.cad.lcd.store_custom_bitmap(
+            EGG_TIMER_BITMAP_INDEX, EGG_TIMER_BITMAP)
 
     @property
     def pictures_taken(self):
@@ -112,16 +120,30 @@ class Camera(object):
         command = self.build_camera_command()
         # print(command)
 
-        self.print_status_char('#')
+        self.print_status_busy()
 
         # print("KCH-CHSSHHH!")
         status = subprocess.call([command], shell=True)
 
         # show that we've finished
-        self.print_status_char(" " if status == 0 else "E")
+        if status == 0:
+            self.print_status_not_busy()
+        else:
+            self.print_status_error()
 
         self.update_display_taken()
         self.update_display_remaining()
+
+    def print_status_busy(self):
+        # self.print_status_char('#')
+        self.cad.lcd.set_cursor(7, 0)
+        self.cad.lcd.write_custom_bitmap(EGG_TIMER_BITMAP_INDEX)
+
+    def print_status_not_busy(self):
+        self.print_status_char(' ')
+
+    def print_status_error(self):
+        self.print_status_char('E')
 
     def print_status_char(self, character):
         # show that we're taking

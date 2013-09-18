@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import time
 import socket
 import argparse
