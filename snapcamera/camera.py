@@ -1,25 +1,36 @@
 import os
+import stat
 import subprocess
 import pifacecad
 from pifacecad.lcd import LCD_WIDTH
-from snapcamera.mode_options import (
+from snapcamera.mode_option import (
     IMAGE_DIR,
     OVERLAY_DIR,
-    CAMERA_EFFECTS,
     CameraModeOption,
+)
+from snapcamera.effects import (
+    CAMERA_EFFECTS,
     EffectsModeOption,
     OverlayModeOption,
+)
+from snapcamera.timelapse import (
     TimelapseModeOption,
+)
+from snapcamera.ir import (
     IRModeOption,
-    NetworkTriggerModeOption,
+)
+from snapcamera.viewer import (
     ViewerModeOption,
+)
+from snapcamera.network import (
+    NetworkTriggerModeOption,
 )
 
 
 AVERAGE_IMAGE_SIZE = 2.4 * 1024 * 1024  # 2.4M is from `ls -l`
 EGG_TIMER_BITMAP = pifacecad.LCDBitmap(
-    #[0x1f, 0x11, 0xa, 0x4, 0x4, 0xa, 0x11, 0x1f])
-    [0x1f, 0x11, 0xa, 0x4, 0xa, 0x11, 0x1f, 0x0])
+    [0x1f, 0x11, 0xa, 0x4, 0xa, 0x11, 0x1f, 0x0])  # no sand
+    #[0x1f, 0x11, 0xa, 0x4, 0xa, 0x1d, 0x1f, 0x0])  # sand
 EGG_TIMER_BITMAP_INDEX = 0
 
 
