@@ -15,6 +15,7 @@ from pifacecad.lcd import LCD_WIDTH
 # OVERLAY_DIR = "{}/../{}".format(
 #     os.path.dirname(os.path.realpath(__file__)), "overlay/")
 IMAGE_DIR = "/home/pi/snap-camera/images/"
+VIDEO_DIR = "/home/pi/snap-camera/videos/"
 OVERLAY_DIR = "/home/pi/snap-camera/overlays/"
 
 

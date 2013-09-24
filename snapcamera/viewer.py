@@ -1,3 +1,4 @@
+import re
 import os
 import subprocess
 from snapcamera.mode_option import ModeOption
@@ -105,3 +106,10 @@ def image_index(image_string):
     """
     #return int(image_string.replace("image", "").replace(".jpg", ""))
     return int(re.sub(r'image([0-9]{4}).*', r'\1', image_string))
+
+
+def video_index(video_string):
+    """Returns the index of the video given. For example: video0010.jpg -> 10
+    """
+    #return int(video_string.replace("video", "").replace(".jpg", ""))
+    return int(re.sub(r'video([0-9]{4}).*', r'\1', video_string))

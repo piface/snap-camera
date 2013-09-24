@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+v0.2.0
+------
+- snap-camera-network can record video, get videos, halt, reboot and turn the
+  backlight on/off. Also, split up the files in the snapcamera package.
+
 v0.1.1
 ------
 - Defined snap-camera-network as a python 3 script so that it can be run

@@ -3,15 +3,23 @@ import socket
 import struct
 import socketserver
 import subprocess
-from snapcamera.mode_option import ModeOption
+import time
+import sched
+import os
+from snapcamera.mode_option import (
+    IMAGE_DIR,
+    VIDEO_DIR,
+    ModeOption,
+)
 
 
 MCAST_GRP = '224.1.1.1'
 MCAST_PORT = 5007
 SEND_LAST_IMAGE_TO = "send last image to "
-TAKE_PICTURE_AT = "take picture at "
-RECORD_VIDEO_AT = "record video at "
-SHUTDOWN_AT = "shutdown at "
+SEND_LAST_VIDEO_TO = "send last video to "
+TAKE_IMAGE_AT = "take picture at "
+RECORD_VIDEO_FOR = "record video for "  # <length> at <time>
+HALT_AT = "halt at "
 REBOOT_AT = "reboot at "
 BACKLIGHT = "backlight "  # on/off
 RUN_COMMNAD = "run command "
@@ -107,70 +115,103 @@ class NetworkCommandHandler(socketserver.BaseRequestHandler):
             #     camera = a_camera_object
             raise NetworkCommandHandlerError("I don't have a camera!")
 
-        if TAKE_PICTURE_AT in data:
-            picture_time = float(data[len(TAKE_PICTURE_AT):])
+        if TAKE_IMAGE_AT in data:
+            picture_time = float(data[len(TAKE_IMAGE_AT):])
             self.take_picture_at(picture_time)
+
+        elif RECORD_VIDEO_FOR in data:
+            video_length, video_time = \
+                data[len(RECORD_VIDEO_FOR):].split(" at ")
+            self.record_video_at(int(video_length), float(video_time))
+
         elif SEND_LAST_IMAGE_TO in data:
             ip, port = data[len(SEND_LAST_IMAGE_TO):].split(":")
             last_image = sorted(os.listdir(IMAGE_DIR))[-1]
             self.send_image_to(ip, int(port), last_image)
-        elif RECORD_VIDEO_AT in data:
-            video_time = data[len(TAKE_PICTURE_AT):]
-            self.record_video_at(video_time)
-        elif SHUTDOWN_AT in data:
-            shutdown_time = data[len(TAKE_PICTURE_AT):]
-            self.shutdown_at(shutdown_time)
+
+        elif SEND_LAST_VIDEO_TO in data:
+            ip, port = data[len(SEND_LAST_VIDEO_TO):].split(":")
+            last_video = sorted(os.listdir(VIDEO_DIR))[-1]
+            self.send_video_to(ip, int(port), last_video)
+
+        elif HALT_AT in data:
+            halt_time = float(data[len(HALT_AT):])
+            self.halt_at(halt_time)
+
         elif REBOOT_AT in data:
-            reboot_time = data[len(TAKE_PICTURE_AT):]
+            reboot_time = float(data[len(REBOOT_AT):])
             self.reboot_at(reboot_time)
+
         elif BACKLIGHT in data:
-            backlight_state = data[len(TAKE_PICTURE_AT):]
-            self.set_backlight(backlight_state)
+            backlight_state = data[len(BACKLIGHT):]
+            self.set_backlight(backlight_state == "on")
+
         elif RUN_COMMNAD in data:
-            command = data[len(TAKE_PICTURE_AT):]
+            command = data[len(RUN_COMMNAD):]
             self.run_command(command)
 
     def take_picture_at(self, picture_time):
-        # wait until it's picture_time
-        # while time.time() < picture_time:
-        #     pass
-        try:
-            time.sleep(picture_time - time.time())
-        except IOError:  # negative time
-            pass
-        finally:
-            self.camera.take_picture()
+        s = sched.scheduler(time.time, time.sleep)
+        s.enterabs(picture_time, 1, self.camera.take_picture, tuple())
+        s.run()
+
+    def record_video_at(self, video_length, video_time):
+        s = sched.scheduler(time.time, time.sleep)
+        s.enterabs(video_time, 1, self.camera.record_video, (video_length,))
+        s.run()
 
     def send_image_to(self, ip, port, image_name):
         print("sending image to {}:{}".format(ip, port))
+        image_number = self.camera.last_image_number
+        self.send_media_to(ip, port, image_name, image_number, IMAGE_DIR)
+
+    def send_video_to(self, ip, port, video_name):
+        print("sending video to {}:{}".format(ip, port))
+        video_number = self.camera.last_video_number
+        self.send_media_to(ip, port, video_name, video_number, VIDEO_DIR)
+
+    def send_media_to(self, ip, port, media_name, media_number, media_dir):
+        camera_number = self.camera.current_mode['option'].number
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((ip, port))
-        camera_number = self.camera.current_mode['option'].number
-        image_number = self.camera.last_image_number
         try:
             sock.send(bytes(str(camera_number).ljust(16), 'utf-8'))
-            sock.send(bytes(str(image_number).ljust(16), 'utf-8'))
-            with open(IMAGE_DIR + image_name, 'rb') as image:
-                sock.sendall(image.read())
-            # response = sock.recv(1024)
-            # print "Received: {}".format(response)
+            sock.send(bytes(str(media_number).ljust(16), 'utf-8'))
+            with open(media_dir + media_name, 'rb') as media:
+                sock.sendall(media.read())
         finally:
             sock.close()
 
-    def record_video_at(self, video_time):
-        pass
-
-    def shutdown_at(self, shutdown_time):
-        pass
+    def halt_at(self, halt_time):
+        s = sched.scheduler(time.time, time.sleep)
+        s.enterabs(halt_time, 1, self.halt, tuple())
+        s.run()
 
     def reboot_at(self, reboot_time):
-        pass
+        s = sched.scheduler(time.time, time.sleep)
+        s.enterabs(reboot_time, 1, self.reboot, tuple())
+        s.run()
+
+    def halt(self):
+        self.camera.cad.lcd.clear()
+        self.camera.cad.lcd.write("Going down for\nsystem halt.")
+        subprocess.call(['sudo', 'halt'])
+
+    def reboot(self):
+        self.camera.cad.lcd.clear()
+        self.camera.cad.lcd.write("The system will\nreboot.")
+        subprocess.call(['sudo', 'reboot'])
 
     def set_backlight(self, backlight_state):
-        pass
+        if backlight_state:
+            self.camera.cad.lcd.backlight_on()
+        else:
+            self.camera.cad.lcd.backlight_off()
 
     def run_command(self, command):
-        pass
+        s = sched.scheduler(time.time, time.sleep)
+        s.enterabs(start_time, 1, subprocess.call, (command.split(" ")))
+        s.run()
 
 
 def get_my_ip():

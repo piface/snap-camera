@@ -5,6 +5,7 @@ import pifacecad
 from pifacecad.lcd import LCD_WIDTH
 from snapcamera.mode_option import (
     IMAGE_DIR,
+    VIDEO_DIR,
     OVERLAY_DIR,
     CameraModeOption,
 )
@@ -21,6 +22,8 @@ from snapcamera.ir import (
 )
 from snapcamera.viewer import (
     ViewerModeOption,
+    image_index,
+    video_index,
 )
 from snapcamera.network import (
     NetworkTriggerModeOption,
@@ -39,13 +42,13 @@ class Camera(object):
     """
     def __init__(self, cad, start_mode='camera'):
         # make the image and overlay dirs
-        for directory in (IMAGE_DIR, OVERLAY_DIR):
+        for directory in (IMAGE_DIR, VIDEO_DIR, OVERLAY_DIR):
             if not os.path.exists(directory):
                 os.makedirs(directory, exist_ok=True)
                 os.chmod(directory,
-                         stat.S_IRUSR | stat.S_IWUSR |  # user  R/W
-                         stat.S_IRGRP | stat.S_IXGRP |  # group R/W
-                         stat.S_IROTH | stat.S_IWOTH)   # other R/W
+                         stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |  # rwx
+                         stat.S_IRGRP | stat.S_IXGRP |  # group R/X
+                         stat.S_IROTH | stat.S_IXOTH)   # other R/X
 
         # this is a bit hacky
         #---------------------------------------------------------------
@@ -89,21 +92,41 @@ class Camera(object):
 
     @property
     def last_image_number(self):
+        images = filter(lambda filename: "image" in filename,
+                        os.listdir(IMAGE_DIR))
         try:
-            last_image = sorted(os.listdir(IMAGE_DIR))[-1]
+            last_image = sorted(images)[-1]
         except IndexError:
             image_number = 0
         else:
-            last_image = last_image.strip(".jpgpng")
-            if '_' in last_image:
-                last_image = last_image[:-5]  # get rid of the _0000
-            image_number = int(last_image[-4:])
+            image_number = image_index(last_image)
+            # last_image = last_image.strip(".jpgpng")
+            # if '_' in last_image:
+            #     last_image = last_image[:-5]  # get rid of the _0000
+            # image_number = int(last_image[-4:])
         finally:
             return image_number
 
     @property
     def next_image_number(self):
         return self.last_image_number + 1
+
+    @property
+    def last_video_number(self):
+        videos = filter(lambda filename: "video" in filename,
+                        os.listdir(VIDEO_DIR))
+        try:
+            last_video = sorted(videos)[-1]
+        except IndexError:
+            video_number = 0
+        else:
+            video_number = video_index(last_video)
+        finally:
+            return video_number
+
+    @property
+    def next_video_number(self):
+        return self.last_video_number + 1
 
     def build_camera_command(self):
         command = 'raspistill'
@@ -122,26 +145,45 @@ class Camera(object):
                 filename=IMAGE_DIR+"image{:04}.jpg".format(
                     self.next_image_number),
             )
-        command += " -n" if self.preview_on else ""
+        command += " --nopreview" if not self.preview_on else ""
         command += " --imxfx {}".format(self.effect)
+        return command
+
+    def build_video_command(self, length):
+        command = 'raspivid'
+        command += ' --timeout {timeout} --output {filename}'
+        command += ' --width {width} --height {height}'
+        command += ' --bitrate {bitrate} --framerate {framerate}'
+        command = command.format(
+            timeout=length,
+            filename="{video_dir}video{number:04}.h264".format(
+                video_dir=VIDEO_DIR,
+                number=self.next_video_number),
+            width=1080,
+            height=720,
+            bitrate=10000000,  # 10 Mbps
+            framerate=24,
+        )
+        command += ' --nopreview' if not self.preview_on else ""
         return command
 
     def take_picture(self):
         """Captures a picture with the camera."""
         command = self.build_camera_command()
-        # print(command)
+        self.run_camera_command(self.build_camera_command())
 
+    def record_video(self, length):
+        """Captures video with the camera."""
+        self.run_camera_command(self.build_video_command(length))
+
+    def run_camera_command(self, command):
         self.print_status_busy()
-
         # print("KCH-CHSSHHH!")
         status = subprocess.call([command], shell=True)
-
-        # show that we've finished
         if status == 0:
             self.print_status_not_busy()
         else:
             self.print_status_error()
-
         self.update_display_taken()
         self.update_display_remaining()
 
