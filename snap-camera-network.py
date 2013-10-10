@@ -15,6 +15,7 @@ try:
         REBOOT_AT,
         BACKLIGHT,
         RUN_COMMNAD,
+        USING_CAMERAS,
         MCAST_GRP,
         MCAST_PORT,
     )
@@ -28,6 +29,7 @@ except ImportError:
     REBOOT_AT = "reboot at "
     BACKLIGHT = "backlight "  # on/off
     RUN_COMMNAD = "run command "
+    USING_CAMERAS = " using cameras "
     MCAST_GRP = '224.1.1.1'
     MCAST_PORT = 5007
 
@@ -75,31 +77,49 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
 
 
 def send_multicast(message):
+    #print(message)  # use this for debugging
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
     sock.sendto(bytes(message, 'utf-8'), (MCAST_GRP, MCAST_PORT))
 
 
+def build_command(command, time=None, cameras=None):
+    """Returns the command string.
+
+    :param command: The command to run.
+    :param time: The time to run the command.
+    :param cameras: A list of camera numbers which should run the command.
+    """
+    cmd_str = command
+    if time is not None:
+        cmd_str += time
+    if cameras is not None and len(cameras) > 0:
+        cmd_str += USING_CAMERAS + ",".join(map(str, cameras))
+    return cmd_str
+
+
 def image(args):
     pic_time = time.time() + TRIGGER_DELAY
-    send_multicast(TAKE_IMAGE_AT + str(pic_time))
+    send_multicast(build_command(TAKE_IMAGE_AT, str(pic_time), args.cameras))
 
 
-def video(args):
+def video(args, cameras):
     video_time = time.time() + TRIGGER_DELAY
     length = args.video_length if args.video_length else DEFAULT_VIDEO_LENGTH
-    send_multicast(RECORD_VIDEO_FOR + str(length) + " at " + str(video_time))
+    send_multicast(build_command(RECORD_VIDEO_FOR + str(length) + " at ",
+                                 str(video_time),
+                                 args.cameras))
 
 
-def getimages(args):
-    get_media(args, ImageTCPRequestHandler, SEND_LAST_IMAGE_TO)
+def getimages(args, cameras):
+    get_media(args, ImageTCPRequestHandler, SEND_LAST_IMAGE_TO, args.cameras)
 
 
-def getvideos(args):
-    get_media(args, VideoTCPRequestHandler, SEND_LAST_VIDEO_TO)
+def getvideos(args, cameras):
+    get_media(args, VideoTCPRequestHandler, SEND_LAST_VIDEO_TO, args.cameras)
 
 
-def get_media(args, request_handler, command):
+def get_media(args, request_handler, command, cameras):
     # start the receiver server
     # Port 0 means to select an arbitrary unused port
     HOST, PORT = "", 0
@@ -117,34 +137,35 @@ def get_media(args, request_handler, command):
 
     # tell each camera that they need to start sending me images
     ip, port = server.server_address
-    send_multicast("{command}{ip}:{port}".format(
-        command=command, ip=get_my_ip(), port=port))
+    cmd = "{command}{ip}:{port}".format(command=command, ip=get_my_ip(),
+                                        port=port)
+    send_multicast(build_command(cmd))
 
     media_received_barrier.wait()
     server.shutdown()
 
 
 def backlight_on(args):
-    send_multicast(BACKLIGHT + "on")
+    send_multicast(build_command(BACKLIGHT + "on"))
 
 
 def backlight_off(args):
-    send_multicast(BACKLIGHT + "off")
+    send_multicast(build_command(BACKLIGHT + "off"))
 
 
 def halt(args):
-    send_multicast(HALT_AT + str(time.time() + TRIGGER_DELAY))
+    send_multicast(build_command(HALT_AT, str(time.time() + TRIGGER_DELAY)))
 
 
 def reboot(args):
-    send_multicast(REBOOT_AT + str(time.time() + TRIGGER_DELAY))
+    send_multicast(build_command(REBOOT_AT, str(time.time() + TRIGGER_DELAY)))
 
 
 def get_my_ip():
-    return run_cmd("hostname --all-ip-addresses")[:-1].strip()
+    return _run_cmd("hostname --all-ip-addresses")[:-1].strip()
 
 
-def run_cmd(cmd):
+def _run_cmd(cmd):
     return subprocess.check_output(cmd, shell=True).decode('utf-8')
 
 
@@ -156,7 +177,10 @@ if __name__ == "__main__":
                                  'halt', 'reboot'],
                         help="The command to run.")
     parser.add_argument('-c', '--cameras',
-                        help="The number of cameras.",
+                        help="List of cameras to run the command on OR The "
+                             "number of cameras expected to return media when "
+                             "running getimages/getvideos.",
+                        nargs='+',
                         type=int)
     parser.add_argument('-vl', '--video-length',
                         help="Length of video in miliseconds.",

@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+v0.3.0
+------
+- snap-camera can now run commands intended for only some cameras. Also using
+  pifacecad v2.0.0.
+
 v0.2.0
 ------
 - snap-camera-network can record video, get videos, halt, reboot and turn the

@@ -63,9 +63,9 @@ def exit(event):
 
 
 def start_camera(start_mode='camera'):
-    pifacecad.init()
+    cad = pifacecad.PiFaceCAD()
 
-    switchlistener = pifacecad.SwitchEventListener()
+    switchlistener = pifacecad.SwitchEventListener(chip=cad)
     switchlistener.register(0, pifacecad.IODIR_ON, next_mode)
     switchlistener.register(1, pifacecad.IODIR_ON, option1)
     switchlistener.register(2, pifacecad.IODIR_ON, option2)
@@ -75,7 +75,6 @@ def start_camera(start_mode='camera'):
     switchlistener.register(6, pifacecad.IODIR_ON, previous_option)
     switchlistener.register(7, pifacecad.IODIR_ON, next_option)
 
-    cad = pifacecad.PiFaceCAD()
     cad.lcd.display_off()
     cad.lcd.blink_off()
     cad.lcd.cursor_off()
@@ -94,5 +93,4 @@ def start_camera(start_mode='camera'):
     switchlistener.deactivate()
     cad.lcd.clear()
     cad.lcd.backlight_off()
-    pifacecad.deinit()
     print("Good-bye!")

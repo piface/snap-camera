@@ -23,6 +23,7 @@ HALT_AT = "halt at "
 REBOOT_AT = "reboot at "
 BACKLIGHT = "backlight "  # on/off
 RUN_COMMNAD = "run command "
+USING_CAMERAS = " using cameras "
 
 
 class ThreadedMulticastServer(
@@ -113,7 +114,15 @@ class NetworkCommandHandler(socketserver.BaseRequestHandler):
             # You need to subclass this before passing it to your server:
             # class NetworkCommandHandlerWithCamera(NetworkCommandHandler):
             #     camera = a_camera_object
-            raise NetworkCommandHandlerError("I don't have a camera!")
+            raise NetworkCommandHandlerError("I don't have a camera object!")
+
+        if USING_CAMERAS in data:
+            i = data.index(USING_CAMERAS) + len(USING_CAMERAS)
+            cameras = data[i:].split(",")
+            cameras = list(map(int, cameras))
+            # only run the command if this camera is in the list of cameras
+            if self.camera.current_mode.number not in cameras:
+                return
 
         if TAKE_IMAGE_AT in data:
             picture_time = float(data[len(TAKE_IMAGE_AT):])
