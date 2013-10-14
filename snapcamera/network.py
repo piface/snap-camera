@@ -17,7 +17,7 @@ MCAST_GRP = '224.1.1.1'
 MCAST_PORT = 5007
 SEND_LAST_IMAGE_TO = "send last image to "
 SEND_LAST_VIDEO_TO = "send last video to "
-TAKE_IMAGE_AT = "take picture at "
+TAKE_IMAGE_AT = "take image at "
 RECORD_VIDEO_FOR = "record video for "  # <length> at <time>
 HALT_AT = "halt at "
 REBOOT_AT = "reboot at "
@@ -121,8 +121,11 @@ class NetworkCommandHandler(socketserver.BaseRequestHandler):
             cameras = data[i:].split(",")
             cameras = list(map(int, cameras))
             # only run the command if this camera is in the list of cameras
-            if self.camera.current_mode.number not in cameras:
+            if self.camera.current_mode['option'].number not in cameras:
                 return
+            else:
+                i = data.index(USING_CAMERAS)
+                data = data[:i]
 
         if TAKE_IMAGE_AT in data:
             picture_time = float(data[len(TAKE_IMAGE_AT):])

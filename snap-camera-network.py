@@ -68,7 +68,7 @@ class VideoTCPRequestHandler(TCPRequestHandler):
         video_number = int(self.request.recv(16).decode('utf-8').strip())
         print("Receiving from camera {}: video{}".format(
             camera_number, video_number))
-        file_name = "camera{}-video{}.h264".format(camera_number, video_number)
+        file_name = "camera{}-video{}.mp4".format(camera_number, video_number)
         super().handle(file_name)
 
 
@@ -98,32 +98,37 @@ def build_command(command, time=None, cameras=None):
     return cmd_str
 
 
-def image(args):
-    pic_time = time.time() + TRIGGER_DELAY
-    send_multicast(build_command(TAKE_IMAGE_AT, str(pic_time), args.cameras))
+def image(args, image_time=None):
+    if image_time is None:
+        image_time = time.time() + TRIGGER_DELAY
+    send_multicast(build_command(TAKE_IMAGE_AT, str(image_time), args.cameras))
 
 
-def video(args, cameras):
-    video_time = time.time() + TRIGGER_DELAY
+def video(args, video_time=None):
+    if video_time is None:
+        video_time = time.time() + TRIGGER_DELAY
     length = args.video_length if args.video_length else DEFAULT_VIDEO_LENGTH
     send_multicast(build_command(RECORD_VIDEO_FOR + str(length) + " at ",
                                  str(video_time),
                                  args.cameras))
 
 
-def getimages(args, cameras):
-    get_media(args, ImageTCPRequestHandler, SEND_LAST_IMAGE_TO, args.cameras)
+def getimages(args):
+    get_media(args, ImageTCPRequestHandler, SEND_LAST_IMAGE_TO)
 
 
-def getvideos(args, cameras):
-    get_media(args, VideoTCPRequestHandler, SEND_LAST_VIDEO_TO, args.cameras)
+def getvideos(args):
+    get_media(args, VideoTCPRequestHandler, SEND_LAST_VIDEO_TO)
 
 
-def get_media(args, request_handler, command, cameras):
+def get_media(args, request_handler, command):
     # start the receiver server
     # Port 0 means to select an arbitrary unused port
     HOST, PORT = "", 0
-    number_of_cameras = args.cameras if args.cameras else DEFAULT_NUM_CAMERAS
+    if args.cameras[0]:
+        number_of_cameras = args.cameras[0]
+    else:
+        DEFAULT_NUM_CAMERAS
 
     media_received_barrier = threading.Barrier(number_of_cameras + 1)
 

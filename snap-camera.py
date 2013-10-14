@@ -17,11 +17,10 @@ if __name__ == '__main__':
         'viewer'])
     args = parser.parse_args()
     if args.clear:
-        pifacecad.init()
-        pifacecad.PiFaceCAD().lcd.display_off()
-        pifacecad.PiFaceCAD().lcd.clear()
-        pifacecad.PiFaceCAD().lcd.backlight_off()
-        pifacecad.deinit()
+        cad = pifacecad.PiFaceCAD(init_board=False)
+        cad.lcd.display_off()
+        cad.lcd.clear()
+        cad.lcd.backlight_off()
     elif args.mode:
         #---------------------------------------------------------------
         # MAKE SURE YOU UPDATE snapcampera/camera.py WHEN YOU CHANGE THE MODES

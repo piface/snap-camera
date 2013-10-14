@@ -149,16 +149,18 @@ class Camera(object):
         command += " --imxfx {}".format(self.effect)
         return command
 
-    def build_video_command(self, length):
+    def build_video_command(self, length, filename=None):
+        if filename is None:
+            filename = "{video_dir}video{number:04}.h264".format(
+                video_dir=VIDEO_DIR,
+                number=self.next_video_number)
         command = 'raspivid'
         command += ' --timeout {timeout} --output {filename}'
         command += ' --width {width} --height {height}'
         command += ' --bitrate {bitrate} --framerate {framerate}'
         command = command.format(
             timeout=length,
-            filename="{video_dir}video{number:04}.h264".format(
-                video_dir=VIDEO_DIR,
-                number=self.next_video_number),
+            filename=filename,
             width=1080,
             height=720,
             bitrate=10000000,  # 10 Mbps
@@ -170,11 +172,34 @@ class Camera(object):
     def take_picture(self):
         """Captures a picture with the camera."""
         command = self.build_camera_command()
-        self.run_camera_command(self.build_camera_command())
+        self.run_camera_command(command)
 
     def record_video(self, length):
         """Captures video with the camera."""
-        self.run_camera_command(self.build_video_command(length))
+        filename = "{video_dir}video{number:04}.h264".format(
+            video_dir=VIDEO_DIR,
+            number=self.next_video_number)
+        self.run_camera_command(self.build_video_command(length, filename))
+        self.convert_h264_to_mp4(filename)
+
+    def convert_h264_to_mp4(self, h264filename):
+        self.print_status_busy()
+        command = "MP4Box -add {h264file} {mp4file}"
+        command = command.format(h264file=h264filename,
+                                 mp4file=h264filename.replace("h264", "mp4"))
+        status = subprocess.call([command], shell=True)
+        status |= self.remove_file(h264filename)
+        if status == 0:
+            self.print_status_not_busy()
+        else:
+            self.print_status_error()
+        self.update_display_taken()
+        self.update_display_remaining()
+
+    def remove_file(self, filename):
+        command = "rm {}".format(filename)
+        status = subprocess.call([command], shell=True)
+        return status
 
     def run_camera_command(self, command):
         self.print_status_busy()

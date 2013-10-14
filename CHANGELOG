@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+v0.4.0
+------
+- video network option now converts video to mp4 using MP4Box (ffmpeg doesn't
+  work).
+
 v0.3.0
 ------
 - snap-camera can now run commands intended for only some cameras. Also using
