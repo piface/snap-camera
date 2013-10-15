@@ -53,7 +53,11 @@ def option3(event):
 def take_picture(event):
     global camera
     camera.current_mode['option'].pre_picture()
-    camera.take_picture()
+    if camera.current_mode['name'] == 'video':
+        l = camera.current_mode['option'].length
+        camera.record_video(l)
+    else:
+        camera.take_picture()
     camera.current_mode['option'].post_picture()
 
 

@@ -8,6 +8,7 @@ from snapcamera.mode_option import (
     VIDEO_DIR,
     OVERLAY_DIR,
     CameraModeOption,
+    VideoModeOption,
 )
 from snapcamera.effects import (
     CAMERA_EFFECTS,
@@ -53,7 +54,7 @@ class Camera(object):
         # this is a bit hacky
         #---------------------------------------------------------------
         # MAKE SURE YOU UPDATE THIS SECTION WHEN YOU CHANGE THE MODES
-        possible_modes = ('camera', 'effects', 'overlay', 'timelapse',
+        possible_modes = ('camera', 'effects', 'overlay', 'timelapse', 'video'
                           'ir', 'network', 'viewer')
         self.current_mode_index = possible_modes.index(start_mode)
 
@@ -62,6 +63,7 @@ class Camera(object):
             {'name': 'effects', 'option': EffectsModeOption(self)},
             {'name': 'overlay', 'option': OverlayModeOption(self)},
             {'name': 'timelapse', 'option': TimelapseModeOption(self)},
+            {'name': 'video', 'option': VideoModeOption(self)},
             {'name': 'IR', 'option': IRModeOption(self)},
             {'name': 'network', 'option': NetworkTriggerModeOption(self)},
             {'name': 'viewer', 'option': ViewerModeOption(self)},
@@ -156,15 +158,20 @@ class Camera(object):
                 number=self.next_video_number)
         command = 'raspivid'
         command += ' --timeout {timeout} --output {filename}'
-        command += ' --width {width} --height {height}'
-        command += ' --bitrate {bitrate} --framerate {framerate}'
+        command += ' --exposure {exposure} --awb {awb}'
+        command += ' --framerate {framerate}'
+        # command += ' --width {width} --height {height}'
+        # command += ' --bitrate {bitrate} --framerate {framerate}'
         command = command.format(
             timeout=length,
             filename=filename,
-            width=1080,
-            height=720,
-            bitrate=10000000,  # 10 Mbps
-            framerate=24,
+            exposure='fixedfps',
+            awb='fluorescent',
+            framerate=30,
+            # width=1080,
+            # height=720,
+            # bitrate=10000000,  # 10 Mbps
+            # framerate=24,
         )
         command += ' --nopreview' if not self.preview_on else ""
         return command
@@ -175,7 +182,7 @@ class Camera(object):
         self.run_camera_command(command)
 
     def record_video(self, length):
-        """Captures video with the camera."""
+        """Captures video with the camera. Length is in miliseconds."""
         filename = "{video_dir}video{number:04}.h264".format(
             video_dir=VIDEO_DIR,
             number=self.next_video_number)
