@@ -1,0 +1,38 @@
+Source: snap-camera
+Maintainer: Thomas Preston <thomas.preston@openlx.org.uk>
+Section: python
+Priority: optional
+Build-Depends: python-all (>= 2.6.6-3),
+               debhelper (>= 7),
+               python3,
+               python3-setuptools
+Standards-Version: 3.9.1
+X-Python3-Version: >= 3.2
+Homepage: http://www.piface.org.uk/
+
+Package: python-snap-camera
+Architecture: all
+Depends: ${misc:Depends},
+         ${python:Depends},
+         python-pifacecad (>= 2.0.0), python-pifacecad (<< 3.0.0),
+         imagemagick, fbi, gpac
+Description: DO NOT USE THIS PACKAGE!
+ HAVE TO INCLUDE THIS STANZA SO THAT PYTHON 2 LIBRARIES AREN'T INCLUDED IN
+ PYTHON 3 PACKAGE!
+
+Package: python3-snap-camera
+Architecture: all
+Depends: ${misc:Depends},
+         ${python3:Depends},
+         python3-pifacecad (>= 2.0.0), python3-pifacecad (<< 3.0.0),
+         imagemagick, fbi, gpac
+Description: A camera that uses PiFace Control and Display and Raspicam.
+ A camera that uses PiFace Control and Display and Raspicam.
+ Features:
+ - Delay timer.
+ - Image effects.
+ - Image overlay.
+ - Timelapse mode.
+ - Infrared trigger.
+ - Network trigger (support for multiple cameras).
+ - Network image retrieval (support for multiple cameras).
