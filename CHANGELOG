@@ -1,6 +1,10 @@
 Change Log
 ==========
 
+v0.6.2
+------
+- Starts in network mode for demo (MAKE SURE YOU REVERT THIS!!!).
+
 v0.6.1
 ------
 - Fixed bug in IR mode where I hadn't imported pifacecad.
