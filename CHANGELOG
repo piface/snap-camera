@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+v0.6.0
+------
+- Saves network camera number to a file.
+- Fixed bug where start mode would be one index below.
+
 v0.5.0
 ------
 - Added video mode.

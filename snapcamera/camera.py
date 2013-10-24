@@ -54,7 +54,7 @@ class Camera(object):
         # this is a bit hacky
         #---------------------------------------------------------------
         # MAKE SURE YOU UPDATE THIS SECTION WHEN YOU CHANGE THE MODES
-        possible_modes = ('camera', 'effects', 'overlay', 'timelapse', 'video'
+        possible_modes = ('camera', 'effects', 'overlay', 'timelapse', 'video',
                           'ir', 'network', 'viewer')
         self.current_mode_index = possible_modes.index(start_mode)
 

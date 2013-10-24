@@ -25,6 +25,8 @@ BACKLIGHT = "backlight "  # on/off
 RUN_COMMNAD = "run command "
 USING_CAMERAS = " using cameras "
 
+CAM_NUM_FILE = "camera-number.txt"
+
 
 class ThreadedMulticastServer(
         socketserver.ThreadingMixIn, socketserver.UDPServer):
@@ -49,7 +51,23 @@ class NetworkTriggerModeOption(ModeOption):
     def __init__(self, *args):
         super().__init__(*args)
         self.server = None
-        self.number = 0
+
+        # check for camera number
+        try:
+            f = open(CAM_NUM_FILE, 'r')
+        except IOError:
+            self.number = 0
+            self.save_number_to_file()
+        else:
+            self.load_number_from_file()
+
+    def load_number_from_file(self):
+        with open(CAM_NUM_FILE, 'r') as num_file:
+            self.number = int(num_file.read())
+
+    def save_number_to_file(self):
+        with open(CAM_NUM_FILE, 'w') as num_file:
+            num_file.write(str(self.number))
 
     def update_display_option_text(self):
         if self.server:
@@ -91,11 +109,13 @@ class NetworkTriggerModeOption(ModeOption):
         if self.server:
             self.number += 1
             self.update_display_option_text()
+            self.save_number_to_file()
 
     def previous(self):
         if self.server:
             self.number -= 1
             self.update_display_option_text()
+            self.save_number_to_file()
 
 
 class NetworkCommandHandlerError(Exception):
