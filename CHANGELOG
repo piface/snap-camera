@@ -1,6 +1,10 @@
 Change Log
 ==========
 
+v0.6.1
+------
+- Fixed bug in IR mode where I hadn't imported pifacecad.
+
 v0.6.0
 ------
 - Saves network camera number to a file.
