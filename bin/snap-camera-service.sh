@@ -12,7 +12,7 @@ LOCKFILE="/var/lock/snap_camera_service.lock"
 
 start() {
         echo -n "Starting snap-camera service: "
-        /usr/bin/python3 /usr/bin/snap-camera &
+        /usr/bin/python3 /usr/bin/snap-camera --mode network &
         ### Create the lock file ###
         echo $! > $LOCKFILE
         status
