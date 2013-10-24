@@ -1,3 +1,4 @@
+import pifacecad
 from snapcamera.mode_option import ModeOption
 
 
