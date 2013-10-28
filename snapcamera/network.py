@@ -27,6 +27,9 @@ USING_CAMERAS = " using cameras "
 
 CAM_NUM_FILE = "camera-number.txt"
 
+TRY_AGAIN_ATTEMPTS = 6
+TRY_AGAIN_TIME = 10  # seconds
+
 
 class ThreadedMulticastServer(
         socketserver.ThreadingMixIn, socketserver.UDPServer):
@@ -51,6 +54,8 @@ class NetworkTriggerModeOption(ModeOption):
     def __init__(self, *args):
         super().__init__(*args)
         self.server = None
+        self.try_again_timer = None
+        self.server_start_attempts = 0
 
         # check for camera number
         try:
@@ -72,6 +77,8 @@ class NetworkTriggerModeOption(ModeOption):
     def update_display_option_text(self):
         if self.server:
             super().update_display_option_text("#{}".format(self.number))
+        elif self.server_start_attempts < TRY_AGAIN_ATTEMPTS:
+            super().update_display_option_text("wait")
         else:
             super().update_display_option_text("error")
 
@@ -82,11 +89,17 @@ class NetworkTriggerModeOption(ModeOption):
         class NetworkCommandHandlerWithCamera(NetworkCommandHandler):
             camera = self.camera
 
+        self.server_start_attempts += 1
         try:
             self.server = ThreadedMulticastServer(
                 ('', 0), NetworkCommandHandlerWithCamera)
         except socket.error as e:
             print(e)
+            if self.server_start_attempts < TRY_AGAIN_ATTEMPTS:
+                print("Trying again in {} seconds.".format(TRY_AGAIN_TIME))
+                self.try_again_timer = threading.Timer(TRY_AGAIN_TIME,
+                                                       self.enter)
+                self.try_again_timer.start()
             self.update_display_option_text()
             return
 
@@ -104,6 +117,8 @@ class NetworkTriggerModeOption(ModeOption):
         if self.server:
             self.server.shutdown()
             print("Stopped server.")
+        if self.try_again_timer:
+            self.try_again_timer.cancel()
 
     def next(self):
         if self.server:

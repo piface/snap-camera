@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+v0.7.0
+------
+- Network mode will keep trying to start the server periodically.
+- RWX permissions for everyone.
+
 v0.6.2
 ------
 - Starts in network mode for demo (MAKE SURE YOU REVERT THIS!!!).
