@@ -46,10 +46,11 @@ class Camera(object):
         for directory in (IMAGE_DIR, VIDEO_DIR, OVERLAY_DIR):
             if not os.path.exists(directory):
                 os.makedirs(directory, exist_ok=True)
+                # rwx for everyone
                 os.chmod(directory,
-                         stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |  # rwx
-                         stat.S_IRGRP | stat.S_IXGRP |  # group R/X
-                         stat.S_IROTH | stat.S_IXOTH)   # other R/X
+                         stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |
+                         stat.S_IRGRP | stat.S_IWUSR | stat.S_IXGRP |
+                         stat.S_IROTH | stat.S_IWUSR | stat.S_IXOTH)
 
         # this is a bit hacky
         #---------------------------------------------------------------
