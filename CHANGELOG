@@ -5,6 +5,8 @@ v0.8.0
 ------
 - Added makevideo.
 - Enabled preview and using default timeout to allow camera to settle.
+- Added IP viewer in network mode. Press option 1 (button 1) to change display
+  mode.
 
 v0.7.0
 ------

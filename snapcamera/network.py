@@ -56,6 +56,7 @@ class NetworkTriggerModeOption(ModeOption):
         self.server = None
         self.try_again_timer = None
         self.server_start_attempts = 0
+        self.display_mode = 'number'
 
         # check for camera number
         try:
@@ -76,7 +77,12 @@ class NetworkTriggerModeOption(ModeOption):
 
     def update_display_option_text(self):
         if self.server:
-            super().update_display_option_text("#{}".format(self.number))
+            if self.display_mode == 'number':
+                super().update_display_option_text("#{}".format(self.number))
+            elif self.display_mode == 'ip':
+                subnet, end = get_my_ip().split(".")[-2:]
+                ipstr = ".{}.{}".format(subnet, end)
+                super().update_display_option_text(ipstr)
         elif self.server_start_attempts < TRY_AGAIN_ATTEMPTS:
             super().update_display_option_text("wait")
         else:
@@ -131,6 +137,14 @@ class NetworkTriggerModeOption(ModeOption):
             self.number -= 1
             self.update_display_option_text()
             self.save_number_to_file()
+
+    def option1(self):
+        """Changes the display mode."""
+        if self.display_mode == 'number':
+            self.display_mode = 'ip'
+        else:
+            self.display_mode = 'number'
+        self.update_display_option_text()
 
 
 class NetworkCommandHandlerError(Exception):

@@ -2,7 +2,7 @@
 
 SIZE=800x800
 TMP_DIR="temp"
-OUTPUT="output.mp4"#
+OUTPUT="output.mp4"
 FPS=25
 
 # Create a directory and copy the original images there for manipulation:
