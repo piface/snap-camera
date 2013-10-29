@@ -73,7 +73,7 @@ class Camera(object):
         self.cad = cad
 
         # camera options
-        self.preview_on = False
+        self.preview_on = True
         self.timeout = 0
         self.timelapse_interval = None
         self.effect = CAMERA_EFFECTS[0]
@@ -143,8 +143,11 @@ class Camera(object):
                         self.next_image_number),
                 )
         else:
-            command += ' --timeout {timeout} --output {filename}'.format(
-                timeout=self.timeout,
+            # removed timeout for normal images
+            # timeout defaults to 5 with preview. Allows the camera to settle
+            # command += ' --timeout {timeout} --output {filename}'.format(
+            command += ' --output {filename}'.format(
+                # timeout=self.timeout,
                 filename=IMAGE_DIR+"image{:04}.jpg".format(
                     self.next_image_number),
             )
