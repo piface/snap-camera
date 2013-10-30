@@ -125,10 +125,13 @@ def get_media(args, request_handler, command):
     # start the receiver server
     # Port 0 means to select an arbitrary unused port
     HOST, PORT = "", 0
-    if args.cameras[0]:
-        number_of_cameras = args.cameras[0]
-    else:
-        DEFAULT_NUM_CAMERAS
+    try:
+        if args.cameras[0]:
+            number_of_cameras = args.cameras[0]
+        else:
+            DEFAULT_NUM_CAMERAS
+    except TypeError:
+        print("ERROR: You need to provide a number of cameras.")
 
     media_received_barrier = threading.Barrier(number_of_cameras + 1)
 

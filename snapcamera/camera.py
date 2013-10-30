@@ -153,6 +153,7 @@ class Camera(object):
             )
         command += " --nopreview" if not self.preview_on else ""
         command += " --imxfx {}".format(self.effect)
+        command += ' --awb {}'.format('fluorescent')
         return command
 
     def build_video_command(self, length, filename=None):

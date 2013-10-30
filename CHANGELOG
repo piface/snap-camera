@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+v0.9.0
+------
+- More sensible error when you don't give scn a camera number.
+- Forced auto white balance to flourecent.
+
 v0.8.0
 ------
 - Added makevideo.
