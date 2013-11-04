@@ -58,7 +58,7 @@ class ImageTCPRequestHandler(TCPRequestHandler):
         image_number = int(self.request.recv(16).decode('utf-8').strip())
         print("Receiving from camera {}: image{}".format(
             camera_number, image_number))
-        file_name = "camera{}-image{}.jpg".format(camera_number, image_number)
+        file_name = "camera{:02}-image{:04}.jpg".format(camera_number, image_number)
         super().handle(file_name)
 
 
@@ -68,7 +68,7 @@ class VideoTCPRequestHandler(TCPRequestHandler):
         video_number = int(self.request.recv(16).decode('utf-8').strip())
         print("Receiving from camera {}: video{}".format(
             camera_number, video_number))
-        file_name = "camera{}-video{}.mp4".format(camera_number, video_number)
+        file_name = "camera{:02}-video{:04}.mp4".format(camera_number, video_number)
         super().handle(file_name)
 
 
