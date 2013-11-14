@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+v0.10.0
+-------
+- Added bullet time script.
+- Snap camera network has more sensible numbering scheme.
+
 v0.9.0
 ------
 - More sensible error when you don't give scn a camera number.
