@@ -1,7 +1,7 @@
 #!/bin/bash
 python setup.py --command-packages=stdeb.command sdist_dsc
 
-version=$(cat snapcamera/version.py | sed 's/.*\([0-9]\.[0-9]\.[0-9]\).*/\1/')
+version=$(cat snapcamera/version.py | sed 's/.*\([0-9]\+\.[0-9]\+\.[0-9]\+\).*/\1/')
 cd deb_dist/snap-camera-$version/
 
 cp {../../dpkg-files,debian}/control
