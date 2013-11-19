@@ -9,7 +9,7 @@ python3 ../snap-camera-network.py image
 echo "Waiting for images to take..."
 echo "Press enter to pull the images when ready."
 read
-python3 ../snap-camera-network.py getimages -c 23
+python3 ../snap-camera-network.py getimages -c 44
 
 echo "Making the cool pictures."
 ../bin/makevideo.sh

@@ -1,6 +1,10 @@
 Change Log
 ==========
 
+v0.11.0
+-------
+- Added streaming function in network mode.
+
 v0.10.0
 -------
 - Added bullet time script.

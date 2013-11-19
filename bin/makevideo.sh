@@ -3,7 +3,7 @@
 SIZE=800x800
 TMP_DIR="temp"
 OUTPUT="output.mp4"
-FPS=25
+FPS=60
 
 # Create a directory and copy the original images there for manipulation:
 mkdir $TMP_DIR
