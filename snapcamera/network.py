@@ -24,6 +24,7 @@ REBOOT_AT = "reboot at "
 BACKLIGHT = "backlight "  # on/off
 RUN_COMMNAD = "run command "
 USING_CAMERAS = " using cameras "
+STREAM = 'stream to '
 
 CAM_NUM_FILE = "camera-number.txt"
 
@@ -211,6 +212,11 @@ class NetworkCommandHandler(socketserver.BaseRequestHandler):
             command = data[len(RUN_COMMNAD):]
             self.run_command(command)
 
+        elif STREAM in data:
+            data = data[len(STREAM):]
+            dest_ip, port_offset = data.split(" from port ")
+            self.stream(dest_ip, int(port_offset))
+
     def take_picture_at(self, picture_time):
         s = sched.scheduler(time.time, time.sleep)
         s.enterabs(picture_time, 1, self.camera.take_picture, tuple())
@@ -273,6 +279,14 @@ class NetworkCommandHandler(socketserver.BaseRequestHandler):
         s = sched.scheduler(time.time, time.sleep)
         s.enterabs(start_time, 1, subprocess.call, (command.split(" ")))
         s.run()
+
+    def stream(self, dest_ip, port_offset):
+        port = port_offset + self.camera.current_mode['option'].number
+        steam_cmd = "raspivid -fps 20 --width 480 --height 320 -t 999999 "\
+                    "-o - | nc {dest_ip} {port}".format(
+                        dest_ip=dest_ip,
+                        port=port)
+        subprocess.call([steam_cmd], shell=True)
 
 
 def get_my_ip():

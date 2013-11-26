@@ -1,8 +1,10 @@
 import os
+import time
 import threading
 import pifacecad
 from pifacecad.lcd import LCD_WIDTH
 from snapcamera.camera import Camera
+import snapcamera.version
 
 
 def previous_mode(event):
@@ -52,7 +54,12 @@ def option3(event):
 
 def take_picture(event):
     global camera
-    camera.current_mode['option'].pre_picture()
+
+    # do the pre_picture, if it returns false, don't take the picture
+    gogogo = camera.current_mode['option'].pre_picture()
+    if gogogo is not None and gogogo is False:
+        return
+
     if camera.current_mode['name'] == 'video':
         l = camera.current_mode['option'].length
         camera.record_video(l)
@@ -64,6 +71,15 @@ def take_picture(event):
 def exit(event):
     global should_i_exit
     should_i_exit.wait()
+
+
+def splash_screen(cad):
+    cad.lcd.write("Snap Camera {}\n"
+                  "       by PiFace".format(snapcamera.version.__version__))
+    cad.lcd.display_on()
+    time.sleep(3)
+    cad.lcd.display_off()
+    cad.lcd.clear()
 
 
 def start_camera(start_mode='camera'):
@@ -84,6 +100,9 @@ def start_camera(start_mode='camera'):
     cad.lcd.cursor_off()
     cad.lcd.clear()
     cad.lcd.backlight_on()
+
+    splash_screen(cad)
+
     global camera
     camera = Camera(cad, start_mode)
     camera.current_mode['option'].enter()

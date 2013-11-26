@@ -1,6 +1,20 @@
 Change Log
 ==========
 
+v0.12.0
+-------
+- Timelapse has second/minute/hour/day units.
+- Added splash screen.
+
+v0.11.1
+-------
+- Added `auto_while_balance` variable.
+- Pre-picture is agument based.
+
+v0.11.0
+-------
+- Added streaming function in network mode.
+
 v0.10.0
 -------
 - Added bullet time script.
