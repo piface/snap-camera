@@ -52,7 +52,12 @@ def option3(event):
 
 def take_picture(event):
     global camera
-    camera.current_mode['option'].pre_picture()
+
+    # do the pre_picture, if it returns false, don't take the picture
+    gogogo = camera.current_mode['option'].pre_picture()
+    if gogogo is not None and gogogo is False:
+        return
+
     if camera.current_mode['name'] == 'video':
         l = camera.current_mode['option'].length
         camera.record_video(l)

@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+v0.11.1
+-------
+- Added `auto_while_balance` variable.
+- Pre-picture is agument based.
+
 v0.11.0
 -------
 - Added streaming function in network mode.

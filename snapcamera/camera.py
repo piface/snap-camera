@@ -77,9 +77,10 @@ class Camera(object):
         self.timeout = 0
         self.timelapse_interval = None
         self.effect = CAMERA_EFFECTS[0]
+        self.auto_white_balance = 'fluorescent'
 
-        self.cad.lcd.store_custom_bitmap(
-            EGG_TIMER_BITMAP_INDEX, EGG_TIMER_BITMAP)
+        self.cad.lcd.store_custom_bitmap(EGG_TIMER_BITMAP_INDEX,
+                                         EGG_TIMER_BITMAP)
 
     @property
     def pictures_taken(self):
@@ -153,7 +154,7 @@ class Camera(object):
             )
         command += " --nopreview" if not self.preview_on else ""
         command += " --imxfx {}".format(self.effect)
-        command += ' --awb {}'.format('fluorescent')
+        command += ' --awb {}'.format(self.auto_white_balance)
         return command
 
     def build_video_command(self, length, filename=None):
@@ -171,7 +172,7 @@ class Camera(object):
             timeout=length,
             filename=filename,
             exposure='fixedfps',
-            awb='fluorescent',
+            awb=self.auto_white_balance,
             framerate=30,
             # width=1080,
             # height=720,
