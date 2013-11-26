@@ -223,6 +223,9 @@ class Camera(object):
     def print_status_error(self):
         self.print_status_char('E')
 
+    def print_status_attention(self):
+        self.print_status_char('!')
+
     def print_status_char(self, character):
         # show that we're taking
         self.cad.lcd.set_cursor(7, 0)

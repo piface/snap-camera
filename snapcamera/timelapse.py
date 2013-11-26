@@ -1,5 +1,6 @@
 from snapcamera.mode_option import ModeOption
-
+from pifacecad.tools.question import LCDQuestion
+import time
 
 class TimelapseModeOption(ModeOption):
     def __init__(self, *args):
@@ -10,9 +11,9 @@ class TimelapseModeOption(ModeOption):
 
         self.intervalIndex = 0
         self.periodIndex = 0
-        self.timePrint = ["s","m","h"]
-        self.timePrintCaps = ["S","M","H"]
-        self.timeNumbers = [1000,60000,3600000]
+        self.timePrint = ["s","m","h","d"]
+        self.timePrintCaps = ["S","M","H","D"]
+        self.timeNumbers = [1000,60000,3600000,86400000]
 
     def update_display_option_text(self):
         period_delay_seconds = int(self.camera.timeout / self.timeNumbers[self.periodIndex])
@@ -66,14 +67,23 @@ class TimelapseModeOption(ModeOption):
 
     def option2(self):
         # print("option 2 pressed")
-        self.periodIndex = (self.periodIndex+1)%3
+        self.periodIndex = (self.periodIndex+1)%4
         self.period = self.timeNumbers[self.periodIndex]
         self.update_camera()
         self.update_display_option_text()
 
     def option3(self):
         # print("option 3 pressed")
-        self.intervalIndex = (self.intervalIndex+1)%3
+        self.intervalIndex = (self.intervalIndex+1)%4
         self.interval = self.timeNumbers[self.intervalIndex]
         self.update_camera()
         self.update_display_option_text()
+
+    def pre_picture(self):
+        pictures = self.period/self.interval
+        if pictures > self.camera.pictures_remaining:
+            self.camera.cad.lcd.home()
+            self.camera.print_status_attention()
+            time.sleep(3)
+        else: 
+            return True
