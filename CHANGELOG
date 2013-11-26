@@ -1,6 +1,10 @@
 Change Log
 ==========
 
+v0.12.0
+-------
+- Timelapse has second/minute/hour/day units.
+
 v0.11.1
 -------
 - Added `auto_while_balance` variable.
