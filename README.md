@@ -33,3 +33,13 @@ Enable the service at boot:
     sudo update-rc.d snap-camera defaults
 
 The camera should start up on boot.
+
+Development
+===========
+
+Todo:
+
+- Change to use `PiCamera <https://github.com/waveform80/picamera>`_ rather
+  than just calling Raspistill.
+- Timelapse mode should create a video after taking all of the images.
+- Cancel current operation.
