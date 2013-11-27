@@ -1,0 +1,570 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Modes &mdash; Snap Camera 0.12.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.12.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Snap Camera 0.12.0 documentation" href="index.html" />
+    <link rel="next" title="Development Notes" href="devnotes.html" />
+    <link rel="prev" title="Installation" href="install.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="devnotes.html" title="Development Notes"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="Installation"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Snap Camera 0.12.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="modes">
+<h1>Modes<a class="headerlink" href="#modes" title="Permalink to this headline">¶</a></h1>
+<p>The LCD is divided up into four segments: the number of taken images, the
+number of remaining images, the mode and the mode option. Occasionally a
+status symbol will also be shown in the center of the top line. Everything
+is located as follows:</p>
+<div class="highlight-python"><pre>                [5]
+              [6] [7]
+  +----------------+
+  |Taken     Remain|
+  |Mode    Mode Op.|
+  +----------------+
+[0] [1] [2] [3]   [4]</pre>
+</div>
+<p>The button layout is:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="80%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Button</th>
+<th class="head">Function</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>0</td>
+<td>Change mode</td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>Mode option button 1</td>
+</tr>
+<tr class="row-even"><td>2</td>
+<td>Mode option button 2</td>
+</tr>
+<tr class="row-odd"><td>3</td>
+<td>Mode option button 3</td>
+</tr>
+<tr class="row-even"><td>4</td>
+<td>Unused (exit in testing)</td>
+</tr>
+<tr class="row-odd"><td>5</td>
+<td>Take picture/video</td>
+</tr>
+<tr class="row-even"><td>6</td>
+<td>Mode option previous</td>
+</tr>
+<tr class="row-odd"><td>7</td>
+<td>Mode option next</td>
+</tr>
+</tbody>
+</table>
+<p>The status symbols are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Symbol</th>
+<th class="head">Meaning</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Egg timer</td>
+<td>Busy</td>
+</tr>
+<tr class="row-odd"><td>!</td>
+<td>Attention</td>
+</tr>
+<tr class="row-even"><td>E</td>
+<td>Error</td>
+</tr>
+</tbody>
+</table>
+<p>While you can use button 0 to change the mode of the camera, it is sometimes
+useful to be able to start the camera in a certain mode. You can do this with
+the <tt class="docutils literal"><span class="pre">mode</span></tt> flag:</p>
+<div class="highlight-python"><pre>$ snap-camera --mode effects</pre>
+</div>
+<div class="section" id="camera">
+<h2>Camera<a class="headerlink" href="#camera" title="Permalink to this headline">¶</a></h2>
+<p>Camera mode is the default mode. Press the navigation switch in to take a
+picture. Move the navigation switch left or right to change the delay
+period. This is the amount of time the camera will wait before taking the
+picture.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="30%" />
+<col width="70%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Button</th>
+<th class="head">Function</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>0</td>
+<td>Change mode</td>
+</tr>
+<tr class="row-odd"><td>5</td>
+<td>Take picture</td>
+</tr>
+<tr class="row-even"><td>6</td>
+<td>Decrease delay</td>
+</tr>
+<tr class="row-odd"><td>7</td>
+<td>Increase delay</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="effects">
+<h2>Effects<a class="headerlink" href="#effects" title="Permalink to this headline">¶</a></h2>
+<p>Effects mode allows you to select an effect that will be applied to your
+image. Move the navigation switch left or right to select an effect.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="29%" />
+<col width="71%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Button</th>
+<th class="head">Function</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>0</td>
+<td>Change mode</td>
+</tr>
+<tr class="row-odd"><td>5</td>
+<td>Take picture</td>
+</tr>
+<tr class="row-even"><td>6</td>
+<td>Previous effect</td>
+</tr>
+<tr class="row-odd"><td>7</td>
+<td>Next effect</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="overlay">
+<h2>Overlay<a class="headerlink" href="#overlay" title="Permalink to this headline">¶</a></h2>
+<p>Overlay mode allows you to overlay an image stored at
+<tt class="docutils literal"><span class="pre">/home/pi/snap-camera/overlays</span></tt> on top of your image.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="27%" />
+<col width="73%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Button</th>
+<th class="head">Function</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>0</td>
+<td>Change mode</td>
+</tr>
+<tr class="row-odd"><td>5</td>
+<td>Take picture</td>
+</tr>
+<tr class="row-even"><td>6</td>
+<td>Previous overlay</td>
+</tr>
+<tr class="row-odd"><td>7</td>
+<td>Next overlay</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="timelapse">
+<h2>Timelapse<a class="headerlink" href="#timelapse" title="Permalink to this headline">¶</a></h2>
+<p>Timelapse mode will continually take images for a certain period at set
+intervals. The period and interval can be seen in the <cite>mode options</cite> section.
+The number and letter on the left is the total period. The number and
+letter on the right is the interval length.</p>
+<p>The currently selected mode option (period/interval) is denoted with a
+capital letter. You can change which mode option you have selected with
+<cite>option 1</cite> (button 1). You can change the units
+(<strong>s</strong>econd/<strong>m</strong>inute/<strong>h</strong>our/<strong>d</strong>ay) of the period with option 2
+(button 2) and of the interval with option 3 (button 3). You can change
+the values of the period/interval by using the navigation switch.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="11%" />
+<col width="89%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Button</th>
+<th class="head">Function</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>0</td>
+<td>Change mode</td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>Change selected mode option (period/interval)</td>
+</tr>
+<tr class="row-even"><td>2</td>
+<td>Change units of period</td>
+</tr>
+<tr class="row-odd"><td>3</td>
+<td>Change units of interval</td>
+</tr>
+<tr class="row-even"><td>5</td>
+<td>Take picture</td>
+</tr>
+<tr class="row-odd"><td>6</td>
+<td>Decrease selected mode option (period/interval)</td>
+</tr>
+<tr class="row-even"><td>7</td>
+<td>Increase selected mode option (period/interval)</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Period / Interval = Number of pictures taken. Confirm this with
+the remaining pictures above. If too many pictures are to be
+taken the camera will flash the <cite>attention</cite> symbol before
+continuing with taking the images.</p>
+</div>
+</div>
+<div class="section" id="video">
+<h2>Video<a class="headerlink" href="#video" title="Permalink to this headline">¶</a></h2>
+<p>Record a video. Change the length of time with the navigation switch.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Button</th>
+<th class="head">Function</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>0</td>
+<td>Change mode</td>
+</tr>
+<tr class="row-odd"><td>5</td>
+<td>Start recording</td>
+</tr>
+<tr class="row-even"><td>6</td>
+<td>Decrease video length</td>
+</tr>
+<tr class="row-odd"><td>7</td>
+<td>Increase video length</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="ir">
+<h2>IR<a class="headerlink" href="#ir" title="Permalink to this headline">¶</a></h2>
+<p>Take a picture triggered by an IR remote. Press 1 on the remote to take
+the image.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Button</th>
+<th class="head">Function</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>0</td>
+<td>Change mode</td>
+</tr>
+<tr class="row-odd"><td>5</td>
+<td>Take picture</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You must have LIRC correctly configured with a remote for this
+mode to work.</p>
+</div>
+</div>
+<div class="section" id="network">
+<h2>Network<a class="headerlink" href="#network" title="Permalink to this headline">¶</a></h2>
+<p>You can control Snap Camera from the network. Use the navigation switch to
+change the ID number of this camera (useful for when you have more that one
+Snap Camera). Press option 1 to view the IP address of this camera. Press
+it again to go back to viewing the camera number.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Button</th>
+<th class="head">Function</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>0</td>
+<td>Change mode</td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>Toggle Camera Number/IP</td>
+</tr>
+<tr class="row-even"><td>5</td>
+<td>Take picture</td>
+</tr>
+<tr class="row-odd"><td>6</td>
+<td>Increase camera number</td>
+</tr>
+<tr class="row-even"><td>7</td>
+<td>Decrease camera number</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Network mode will error if not connected to a network.</p>
+</div>
+<p>While in network mode the camera can be controlled using the
+<tt class="docutils literal"><span class="pre">snap-camera-network</span></tt> program.</p>
+<div class="section" id="snap-camera-network">
+<h3>snap-camera-network<a class="headerlink" href="#snap-camera-network" title="Permalink to this headline">¶</a></h3>
+<p>Snap Camera Network can control the camera in several different ways. To
+take an image with <tt class="docutils literal"><span class="pre">snap-camera-network</span></tt> run the following:</p>
+<div class="highlight-python"><pre>$ snap-camera-network image</pre>
+</div>
+<p><tt class="docutils literal"><span class="pre">snap-camera-network</span></tt> sends the command to all Snap Camera&#8217;s on the
+network.</p>
+<p>Here is a list some more commands and what they do:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="82%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Command</th>
+<th class="head">Function</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>image</td>
+<td>Takes a picture</td>
+</tr>
+<tr class="row-odd"><td>getimages</td>
+<td>Gets the last image from all cameras. You must specify
+how many cameras there are with the <cite>-c</cite> option becasue
+<tt class="docutils literal"><span class="pre">snap-camera-network</span></tt> needs to know how many images to
+wait for.</td>
+</tr>
+<tr class="row-even"><td>video</td>
+<td>Starts recording a video. You must specify a length in
+milliseconds with the <tt class="docutils literal"><span class="pre">--video-length</span></tt> (<tt class="docutils literal"><span class="pre">-vl</span></tt>) option.</td>
+</tr>
+<tr class="row-odd"><td>getvideos</td>
+<td>Gets the last video from all cameras. You must specify
+how many cameras there are with the <cite>-c</cite> option becasue
+<tt class="docutils literal"><span class="pre">snap-camera-network</span></tt> needs to know how many videos to
+wait for.</td>
+</tr>
+<tr class="row-even"><td>backlight-on</td>
+<td>Turns the backlight on.</td>
+</tr>
+<tr class="row-odd"><td>backlight-off</td>
+<td>Turns the backlight off.</td>
+</tr>
+<tr class="row-even"><td>halt</td>
+<td>Halts the Snap Camera (Raspberry Pi) .</td>
+</tr>
+<tr class="row-odd"><td>reboot</td>
+<td>Reboots the Snap Camera (Raspberry Pi).</td>
+</tr>
+<tr class="row-even"><td>stream</td>
+<td>Streams video from Snap Camera. See below.</td>
+</tr>
+</tbody>
+</table>
+<p>Except for getimages and getvideos you can limit which Snap Cameras
+accept commands by listing the camera numberss you want to respond using
+the <tt class="docutils literal"><span class="pre">-c</span></tt> option. For example, if I only wanted cameras 1, 6 and 18 to
+take an image, I would run:</p>
+<div class="highlight-python"><pre>$ snap-camera-network image -c 1 6 18</pre>
+</div>
+<p>For a help summary run:</p>
+<div class="highlight-python"><pre>$ snap-camera-network --help</pre>
+</div>
+<div class="section" id="streaming-video">
+<h4>Streaming video<a class="headerlink" href="#streaming-video" title="Permalink to this headline">¶</a></h4>
+<p>Snap Camera uses <a class="reference external" href="http://netcat.sourceforge.net/">netcat</a> to send a
+video stream over the network. It sends the video on port
+13000 + <cite>Camera ID</cite> (Snap Camera ID 3 will send it on port 13003).
+Before requesting that Snap Camera begin streaming video you must first
+prepare to accept the video stream and pipe it into something that will
+play it. For this we will use <cite>netcat</cite> and <cite>mplayer</cite> like so:</p>
+<div class="highlight-python"><pre>$ nc -l -p 13001 | mplayer -fps 31 -cache 1024 -</pre>
+</div>
+<p>Notice how this is accepting a video stream from a Snap Camera with
+network ID 1 becasue the port is 1300<strong>1</strong>.</p>
+<p>After running this, mplayer will wait for a video stream to be recevied.
+Now, in another terminal, tell Snap Camera to stream the video:</p>
+<div class="highlight-python"><pre>$ snap-camera-network stream</pre>
+</div>
+<p>In a few seconds you should see the video stream.</p>
+</div>
+</div>
+</div>
+<div class="section" id="viewer">
+<h2>Viewer<a class="headerlink" href="#viewer" title="Permalink to this headline">¶</a></h2>
+<p>Viewer mode allows you to view your images on a connected monitor. Move
+the navigation switch left and right to change image.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="30%" />
+<col width="70%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Button</th>
+<th class="head">Function</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>0</td>
+<td>Change mode</td>
+</tr>
+<tr class="row-odd"><td>5</td>
+<td>Take picture</td>
+</tr>
+<tr class="row-even"><td>6</td>
+<td>Previous image</td>
+</tr>
+<tr class="row-odd"><td>7</td>
+<td>Next image</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Modes</a><ul>
+<li><a class="reference internal" href="#camera">Camera</a></li>
+<li><a class="reference internal" href="#effects">Effects</a></li>
+<li><a class="reference internal" href="#overlay">Overlay</a></li>
+<li><a class="reference internal" href="#timelapse">Timelapse</a></li>
+<li><a class="reference internal" href="#video">Video</a></li>
+<li><a class="reference internal" href="#ir">IR</a></li>
+<li><a class="reference internal" href="#network">Network</a><ul>
+<li><a class="reference internal" href="#snap-camera-network">snap-camera-network</a><ul>
+<li><a class="reference internal" href="#streaming-video">Streaming video</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#viewer">Viewer</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="install.html"
+                        title="previous chapter">Installation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="devnotes.html"
+                        title="next chapter">Development Notes</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/modes.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="devnotes.html" title="Development Notes"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="Installation"
+             >previous</a> |</li>
+        <li><a href="index.html">Snap Camera 0.12.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Thomas Preston.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
