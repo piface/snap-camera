@@ -8,9 +8,16 @@ Welcome to Snap Camera's documentation!
 Snap Camera is a portable DIY camera made from PiFace Control and Display
 and Raspicam.
 
+Images are stored at ``/home/pi/snap-camera/images/``.
+
+Overlays are stored at ``/home/pi/snap-camera/overlays/``.
+
+Videos are stored at ``/home/pi/snap-camera/videos/``.
+
 Links:
 
-   piface.org.uk
+   - `PiFace Home Page <http://www.piface.org.uk>`_
+   - `GitHub <http://github.com/piface/snap-camera/>`_
 
 Contents:
 

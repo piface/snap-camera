@@ -26,6 +26,6 @@ To **stop** Snap Camera::
 
     $ sudo service snap-camera stop
 
-To **enable** Snap Camera to run at boot::
+To enable Snap Camera to **run at boot**::
 
     $ sudo update-rc.d snap-camera defaults
