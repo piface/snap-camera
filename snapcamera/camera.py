@@ -8,6 +8,7 @@ from snapcamera.mode_option import (
     VIDEO_DIR,
     OVERLAY_DIR,
     CameraModeOption,
+    VideoModeOption,
 )
 from snapcamera.effects import (
     CAMERA_EFFECTS,
@@ -45,15 +46,16 @@ class Camera(object):
         for directory in (IMAGE_DIR, VIDEO_DIR, OVERLAY_DIR):
             if not os.path.exists(directory):
                 os.makedirs(directory, exist_ok=True)
+                # rwx for everyone
                 os.chmod(directory,
-                         stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |  # rwx
-                         stat.S_IRGRP | stat.S_IXGRP |  # group R/X
-                         stat.S_IROTH | stat.S_IXOTH)   # other R/X
+                         stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR |
+                         stat.S_IRGRP | stat.S_IWUSR | stat.S_IXGRP |
+                         stat.S_IROTH | stat.S_IWUSR | stat.S_IXOTH)
 
         # this is a bit hacky
         #---------------------------------------------------------------
         # MAKE SURE YOU UPDATE THIS SECTION WHEN YOU CHANGE THE MODES
-        possible_modes = ('camera', 'effects', 'overlay', 'timelapse',
+        possible_modes = ('camera', 'effects', 'overlay', 'timelapse', 'video',
                           'ir', 'network', 'viewer')
         self.current_mode_index = possible_modes.index(start_mode)
 
@@ -62,6 +64,7 @@ class Camera(object):
             {'name': 'effects', 'option': EffectsModeOption(self)},
             {'name': 'overlay', 'option': OverlayModeOption(self)},
             {'name': 'timelapse', 'option': TimelapseModeOption(self)},
+            {'name': 'video', 'option': VideoModeOption(self)},
             {'name': 'IR', 'option': IRModeOption(self)},
             {'name': 'network', 'option': NetworkTriggerModeOption(self)},
             {'name': 'viewer', 'option': ViewerModeOption(self)},
@@ -70,13 +73,14 @@ class Camera(object):
         self.cad = cad
 
         # camera options
-        self.preview_on = False
+        self.preview_on = True
         self.timeout = 0
         self.timelapse_interval = None
         self.effect = CAMERA_EFFECTS[0]
+        self.auto_white_balance = 'fluorescent'
 
-        self.cad.lcd.store_custom_bitmap(
-            EGG_TIMER_BITMAP_INDEX, EGG_TIMER_BITMAP)
+        self.cad.lcd.store_custom_bitmap(EGG_TIMER_BITMAP_INDEX,
+                                         EGG_TIMER_BITMAP)
 
     @property
     def pictures_taken(self):
@@ -140,13 +144,17 @@ class Camera(object):
                         self.next_image_number),
                 )
         else:
-            command += ' --timeout {timeout} --output {filename}'.format(
-                timeout=self.timeout,
+            # removed timeout for normal images
+            # timeout defaults to 5 with preview. Allows the camera to settle
+            # command += ' --timeout {timeout} --output {filename}'.format(
+            command += ' --output {filename}'.format(
+                # timeout=self.timeout,
                 filename=IMAGE_DIR+"image{:04}.jpg".format(
                     self.next_image_number),
             )
         command += " --nopreview" if not self.preview_on else ""
         command += " --imxfx {}".format(self.effect)
+        command += ' --awb {}'.format(self.auto_white_balance)
         return command
 
     def build_video_command(self, length, filename=None):
@@ -156,15 +164,20 @@ class Camera(object):
                 number=self.next_video_number)
         command = 'raspivid'
         command += ' --timeout {timeout} --output {filename}'
-        command += ' --width {width} --height {height}'
-        command += ' --bitrate {bitrate} --framerate {framerate}'
+        command += ' --exposure {exposure} --awb {awb}'
+        command += ' --framerate {framerate}'
+        # command += ' --width {width} --height {height}'
+        # command += ' --bitrate {bitrate} --framerate {framerate}'
         command = command.format(
             timeout=length,
             filename=filename,
-            width=1080,
-            height=720,
-            bitrate=10000000,  # 10 Mbps
-            framerate=24,
+            exposure='fixedfps',
+            awb=self.auto_white_balance,
+            framerate=30,
+            # width=1080,
+            # height=720,
+            # bitrate=10000000,  # 10 Mbps
+            # framerate=24,
         )
         command += ' --nopreview' if not self.preview_on else ""
         return command
@@ -175,7 +188,7 @@ class Camera(object):
         self.run_camera_command(command)
 
     def record_video(self, length):
-        """Captures video with the camera."""
+        """Captures video with the camera. Length is in miliseconds."""
         filename = "{video_dir}video{number:04}.h264".format(
             video_dir=VIDEO_DIR,
             number=self.next_video_number)
@@ -222,6 +235,9 @@ class Camera(object):
 
     def print_status_error(self):
         self.print_status_char('E')
+
+    def print_status_attention(self):
+        self.print_status_char('!')
 
     def print_status_char(self, character):
         # show that we're taking

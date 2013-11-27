@@ -24,6 +24,12 @@ REBOOT_AT = "reboot at "
 BACKLIGHT = "backlight "  # on/off
 RUN_COMMNAD = "run command "
 USING_CAMERAS = " using cameras "
+STREAM = 'stream to '
+
+CAM_NUM_FILE = "camera-number.txt"
+
+TRY_AGAIN_ATTEMPTS = 6
+TRY_AGAIN_TIME = 10  # seconds
 
 
 class ThreadedMulticastServer(
@@ -49,11 +55,37 @@ class NetworkTriggerModeOption(ModeOption):
     def __init__(self, *args):
         super().__init__(*args)
         self.server = None
-        self.number = 0
+        self.try_again_timer = None
+        self.server_start_attempts = 0
+        self.display_mode = 'number'
+
+        # check for camera number
+        try:
+            f = open(CAM_NUM_FILE, 'r')
+        except IOError:
+            self.number = 0
+            self.save_number_to_file()
+        else:
+            self.load_number_from_file()
+
+    def load_number_from_file(self):
+        with open(CAM_NUM_FILE, 'r') as num_file:
+            self.number = int(num_file.read())
+
+    def save_number_to_file(self):
+        with open(CAM_NUM_FILE, 'w') as num_file:
+            num_file.write(str(self.number))
 
     def update_display_option_text(self):
         if self.server:
-            super().update_display_option_text("#{}".format(self.number))
+            if self.display_mode == 'number':
+                super().update_display_option_text("#{}".format(self.number))
+            elif self.display_mode == 'ip':
+                subnet, end = get_my_ip().split(".")[-2:]
+                ipstr = ".{}.{}".format(subnet, end)
+                super().update_display_option_text(ipstr)
+        elif self.server_start_attempts < TRY_AGAIN_ATTEMPTS:
+            super().update_display_option_text("wait")
         else:
             super().update_display_option_text("error")
 
@@ -64,11 +96,17 @@ class NetworkTriggerModeOption(ModeOption):
         class NetworkCommandHandlerWithCamera(NetworkCommandHandler):
             camera = self.camera
 
+        self.server_start_attempts += 1
         try:
             self.server = ThreadedMulticastServer(
                 ('', 0), NetworkCommandHandlerWithCamera)
         except socket.error as e:
             print(e)
+            if self.server_start_attempts < TRY_AGAIN_ATTEMPTS:
+                print("Trying again in {} seconds.".format(TRY_AGAIN_TIME))
+                self.try_again_timer = threading.Timer(TRY_AGAIN_TIME,
+                                                       self.enter)
+                self.try_again_timer.start()
             self.update_display_option_text()
             return
 
@@ -86,16 +124,28 @@ class NetworkTriggerModeOption(ModeOption):
         if self.server:
             self.server.shutdown()
             print("Stopped server.")
+        if self.try_again_timer:
+            self.try_again_timer.cancel()
 
     def next(self):
         if self.server:
             self.number += 1
             self.update_display_option_text()
+            self.save_number_to_file()
 
     def previous(self):
         if self.server:
             self.number -= 1
             self.update_display_option_text()
+            self.save_number_to_file()
+
+    def option1(self):
+        """Changes the display mode."""
+        if self.display_mode == 'number':
+            self.display_mode = 'ip'
+        else:
+            self.display_mode = 'number'
+        self.update_display_option_text()
 
 
 class NetworkCommandHandlerError(Exception):
@@ -162,6 +212,11 @@ class NetworkCommandHandler(socketserver.BaseRequestHandler):
             command = data[len(RUN_COMMNAD):]
             self.run_command(command)
 
+        elif STREAM in data:
+            data = data[len(STREAM):]
+            dest_ip, port_offset = data.split(" from port ")
+            self.stream(dest_ip, int(port_offset))
+
     def take_picture_at(self, picture_time):
         s = sched.scheduler(time.time, time.sleep)
         s.enterabs(picture_time, 1, self.camera.take_picture, tuple())
@@ -224,6 +279,14 @@ class NetworkCommandHandler(socketserver.BaseRequestHandler):
         s = sched.scheduler(time.time, time.sleep)
         s.enterabs(start_time, 1, subprocess.call, (command.split(" ")))
         s.run()
+
+    def stream(self, dest_ip, port_offset):
+        port = port_offset + self.camera.current_mode['option'].number
+        steam_cmd = "raspivid -fps 20 --width 480 --height 320 -t 999999 "\
+                    "-o - | nc {dest_ip} {port}".format(
+                        dest_ip=dest_ip,
+                        port=port)
+        subprocess.call([steam_cmd], shell=True)
 
 
 def get_my_ip():

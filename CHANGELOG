@@ -1,6 +1,59 @@
 Change Log
 ==========
 
+v0.12.0
+-------
+- Timelapse has second/minute/hour/day units.
+- Added splash screen.
+
+v0.11.1
+-------
+- Added `auto_while_balance` variable.
+- Pre-picture is agument based.
+
+v0.11.0
+-------
+- Added streaming function in network mode.
+
+v0.10.0
+-------
+- Added bullet time script.
+- Snap camera network has more sensible numbering scheme.
+
+v0.9.0
+------
+- More sensible error when you don't give scn a camera number.
+- Forced auto white balance to flourecent.
+
+v0.8.0
+------
+- Added makevideo.
+- Enabled preview and using default timeout to allow camera to settle.
+- Added IP viewer in network mode. Press option 1 (button 1) to change display
+  mode.
+
+v0.7.0
+------
+- Network mode will keep trying to start the server periodically.
+- RWX permissions for everyone.
+
+v0.6.2
+------
+- Starts in network mode for demo (MAKE SURE YOU REVERT THIS!!!).
+
+v0.6.1
+------
+- Fixed bug in IR mode where I hadn't imported pifacecad.
+
+v0.6.0
+------
+- Saves network camera number to a file.
+- Fixed bug where start mode would be one index below.
+
+v0.5.0
+------
+- Added video mode.
+
 v0.4.0
 ------
 - video network option now converts video to mp4 using MP4Box (ffmpeg doesn't

@@ -101,3 +101,29 @@ class CameraModeOption(ModeOption):
         if self.delay > 0:
             self.delay -= 1000
             self.update_camera()
+
+
+class VideoModeOption(ModeOption):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.length = 5000
+
+    def update_display_option_text(self):
+        timeout_seconds = int(self.camera.timeout / 1000)
+        super().update_display_option_text(
+            "len {:02}".format(timeout_seconds))
+
+    def update_camera(self):
+        self.camera.timeout = self.length
+
+    def enter(self):
+        self.update_camera()
+
+    def next(self):
+        self.length += 1000
+        self.update_camera()
+
+    def previous(self):
+        if self.length > 0:
+            self.length -= 1000
+            self.update_camera()

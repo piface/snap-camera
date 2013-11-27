@@ -4,6 +4,7 @@ A camera that uses PiFace Control and Display and Raspicam.
 
 Images are stored at `/home/pi/snap-camera/images/`.
 Overlays are stored at `/home/pi/snap-camera/overlays/`.
+Videos are stored at `/home/pi/snap-camera/videos/`.
 
 
 Install

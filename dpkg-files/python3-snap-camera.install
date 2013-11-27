@@ -1,4 +1,0 @@
-usr/lib/python3/*-packages/*
-debian/bin/snap-camera usr/bin/
-debian/bin/snap-camera-network usr/bin/
-debian/service/snap-camera etc/init.d/

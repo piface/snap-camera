@@ -18,9 +18,11 @@ try:
         USING_CAMERAS,
         MCAST_GRP,
         MCAST_PORT,
+        STREAM,
     )
 except ImportError:
-    # fallback on the original command if this script is not next to camera
+    # Fallback on the original command if the snapcamera module is not
+    # installed.
     TAKE_IMAGE_AT = "take image at "
     SEND_LAST_IMAGE_TO = "send last image to "
     RECORD_VIDEO_FOR = "record video for "
@@ -32,11 +34,13 @@ except ImportError:
     USING_CAMERAS = " using cameras "
     MCAST_GRP = '224.1.1.1'
     MCAST_PORT = 5007
+    STREAM = 'stream to '
 
 
 TRIGGER_DELAY = 0.1  # seconds -- so that camera's can sync taking the photo
 DEFAULT_NUM_CAMERAS = 1
 DEFAULT_VIDEO_LENGTH = 5000  # milliseconds
+PORT_OFFSET_DEFAULT = 13000
 
 
 class TCPRequestHandler(socketserver.BaseRequestHandler):
@@ -56,9 +60,10 @@ class ImageTCPRequestHandler(TCPRequestHandler):
     def handle(self):
         camera_number = int(self.request.recv(16).decode('utf-8').strip())
         image_number = int(self.request.recv(16).decode('utf-8').strip())
-        print("Receiving from camera {}: image{}".format(
-            camera_number, image_number))
-        file_name = "camera{:02}-image{:04}.jpg".format(camera_number, image_number)
+        print("Receiving from camera {}: image{}".format(camera_number,
+                                                         image_number))
+        file_name = "camera{:02}-image{:04}.jpg".format(camera_number,
+                                                        image_number)
         super().handle(file_name)
 
 
@@ -66,9 +71,10 @@ class VideoTCPRequestHandler(TCPRequestHandler):
     def handle(self):
         camera_number = int(self.request.recv(16).decode('utf-8').strip())
         video_number = int(self.request.recv(16).decode('utf-8').strip())
-        print("Receiving from camera {}: video{}".format(
-            camera_number, video_number))
-        file_name = "camera{:02}-video{:04}.mp4".format(camera_number, video_number)
+        print("Receiving from camera {}: video{}".format(camera_number,
+                                                         video_number))
+        file_name = "camera{:02}-video{:04}.mp4".format(camera_number,
+                                                        video_number)
         super().handle(file_name)
 
 
@@ -142,7 +148,8 @@ def get_media(args, request_handler, command):
 
     # tell each camera that they need to start sending me images
     ip, port = server.server_address
-    cmd = "{command}{ip}:{port}".format(command=command, ip=get_my_ip(),
+    cmd = "{command}{ip}:{port}".format(command=command,
+                                        ip=get_my_ip(),
                                         port=port)
     send_multicast(build_command(cmd))
 
@@ -166,6 +173,14 @@ def reboot(args):
     send_multicast(build_command(REBOOT_AT, str(time.time() + TRIGGER_DELAY)))
 
 
+def stream(args):
+    steam_cmd = "{cmd} {ip} from port {port_offset}"
+    steam_cmd = steam_cmd.format(cmd=STREAM,
+                                 ip=get_my_ip(),
+                                 port_offset=str(args.port_offset))
+    send_multicast(steam_cmd)
+
+
 def get_my_ip():
     return _run_cmd("hostname --all-ip-addresses")[:-1].strip()
 
@@ -179,7 +194,8 @@ if __name__ == "__main__":
     parser.add_argument("command",
                         choices=['image', 'getimages', 'video', 'getvideos',
                                  'backlight-on', 'backlight-off',
-                                 'halt', 'reboot'],
+                                 'halt', 'reboot',
+                                 'stream'],
                         help="The command to run.")
     parser.add_argument('-c', '--cameras',
                         help="List of cameras to run the command on OR The "
@@ -190,6 +206,13 @@ if __name__ == "__main__":
     parser.add_argument('-vl', '--video-length',
                         help="Length of video in miliseconds.",
                         type=int)
+    parser.add_argument('-po', '--port-offset',
+                        help="Number from which cameras offset their "
+                             "streaming port. Streaming port = port offset + "
+                             "camera number. (Default: {})".format(
+                                 PORT_OFFSET_DEFAULT),
+                        type=int,
+                        default=PORT_OFFSET_DEFAULT)
     args = parser.parse_args()
 
     commands = {
@@ -201,6 +224,7 @@ if __name__ == "__main__":
         'backlight-off': backlight_off,
         'halt': halt,
         'reboot': reboot,
+        'stream': stream,
     }
 
     commands[args.command](args)
