@@ -8,6 +8,9 @@ Overlays are stored at `/home/pi/snap-camera/overlays/`.
 
 Videos are stored at `/home/pi/snap-camera/videos/`.
 
+Documentation
+=============
+Documentation can be found at: [http://piface.github.io/snap-camera/](http://piface.github.io/snap-camera/)
 
 Install
 =======
